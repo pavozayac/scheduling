@@ -24,4 +24,4 @@ jobs:
       - name: Build binary
         run: go build -v ./server.go
       - name: Run tests
-        run: go test
+        run: go test -v ./...
