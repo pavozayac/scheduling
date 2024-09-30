@@ -1,0 +1,27 @@
+name: Go - install dependencies, build and run tests
+
+on: [push]
+
+env:
+  GO_VER: '1.22.5'
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Go ${{ env.GO_VER }}
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VER }}
+          cache-dependency-path: go.sum
+      - name: Display Go version
+        run: go version
+      - name: Install dependencies
+        run: go get .
+      - name: Build binary
+        run: go build -v ./server.go
+      - name: Run tests
+        run: go test
