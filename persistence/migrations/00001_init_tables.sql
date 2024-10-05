@@ -1,3 +1,5 @@
+-- +goose Up
+
 CREATE TABLE schedules (
     id integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     title varchar(200) NOT NULL,
@@ -62,3 +64,16 @@ CREATE TABLE location_task_constraints (
     task_id integer REFERENCES tasks(id);
     kind constraint_type NOT NULL;
 );
+
+-- +goose Down
+
+DROP TABLE schedules;
+DROP TABLE workers;
+DROP TABLE tasks;
+DROP TABLE locations;
+DROP TYPE constraint_type;
+DROP TABLE worker_time_constraints;
+DROP TABLE location_time_constraints;
+DROP TABLE task_time_constraints;
+DROP TABLE worker_task_constraints;
+DROP TABLE location_task_constraints;
