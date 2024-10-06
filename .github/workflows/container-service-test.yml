@@ -1,12 +1,18 @@
-name: Go - install dependencies, build and run tests
+name: container-service - run tests
 
-on: [push]
+on:
+  push:
+    paths: 
+      - src/container-service/**
+  pull_request: 
+    paths: 
+      - src/container-service/**
 
 env:
   GO_VER: '1.22.5'
 
 jobs:
-  build:
+  test:
 
     runs-on: ubuntu-latest
 
