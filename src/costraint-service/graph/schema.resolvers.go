@@ -8,7 +8,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/pavozayac/constraint-service/graph/model"
+	"github.com/pavozayac/scheduling/src/constraint-service/graph/model"
 )
 
 // CreateTodo is the resolver for the createTodo field.

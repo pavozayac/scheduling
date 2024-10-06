@@ -1,5 +1,5 @@
 # Change these variables as necessary.
-main_package_path = github.com/pavozayac/constraint-service/cmd/server
+main_package_path = github.com/pavozayac/scheduling/src/constraint-service/cmd/server
 binary_name = server
 
 # ==================================================================================== #

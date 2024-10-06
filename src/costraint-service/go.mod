@@ -1,4 +1,4 @@
-module github.com/pavozayac/constraint-service
+module github.com/pavozayac/scheduling/src/constraint-service
 
 go 1.22.5
 

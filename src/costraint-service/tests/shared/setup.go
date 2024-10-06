@@ -4,7 +4,7 @@ import (
 	"github.com/99designs/gqlgen/client"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/gin-gonic/gin"
-	"github.com/pavozayac/constraint-service/graph"
+	"github.com/pavozayac/scheduling/src/constraint-service/graph"
 )
 
 func SetupRouter() *gin.Engine {
