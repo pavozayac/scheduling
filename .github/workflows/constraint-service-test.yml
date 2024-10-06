@@ -13,7 +13,7 @@ env:
 
 defaults:
   run:
-    working-directory: src/constraint-service/
+    working-directory: ./src/constraint-service
 
 jobs:
   test:
@@ -29,8 +29,6 @@ jobs:
       - name: Display Go version
         run: go version
       - name: Install dependencies
-        run: go get .
-      - name: Build binary
-        run: go build -v ./server.go
+        run: make build
       - name: Run tests
-        run: go test -v ./...
+        run: make test
