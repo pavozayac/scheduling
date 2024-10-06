@@ -1,5 +1,5 @@
 # Change these variables as necessary.
-main_package_path = ./server
+main_package_path = github.com/pavozayac/constraint-service/cmd/server
 binary_name = server
 
 # ==================================================================================== #
@@ -54,7 +54,8 @@ test/cover:
 ## tools: install tools listed in tools.go
 .PHONY: tools
 tools:
-	go install $(cat tools.go | grep '_' | sed -n 's/_/ /p' | sed -n 's/"/ /p' | sed -n 's/"/ /p')
+	TOOLS=$(cat ./tools/tools.go | grep '_' | sed -n 's/_/ /p' | sed -n 's/"/ /p' | sed -n 's/"/ /p') \
+	go install ${TOOLS}
 
 ## tidy: tidy modfiles and format .go files
 .PHONY: tidy
