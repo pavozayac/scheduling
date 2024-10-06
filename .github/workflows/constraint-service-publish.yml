@@ -1,4 +1,4 @@
-name: ci
+name: constraint-service - build and push docker image
 
 on:
   push:
@@ -9,10 +9,17 @@ on:
     branches: [develop]
     paths: 
       - src/constraint-service/**
+  workflow_dispatch: 
 
 env:
+  APP_NAME: constraint-service
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}.constraint-service.${{ github.head_ref }}.${{ github.sha }}
+  # placeholder
+  IMAGE_NAME:
+
+defaults:
+  run:
+     working-directory: ./src/constraint-service
 
 jobs:
   build-and-push-image:
@@ -26,6 +33,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      - name: Set image name
+        id: short-sha
+        run: echo "IMAGE_NAME=${{ github.repository }}.${{ env.APP_NAME }}.$(git rev-parse --short HEAD)" >> $GITHUB_ENV
       - name: Log in to registry
         uses: docker/login-action@v3
         with:
@@ -36,19 +46,19 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{env.REGISTRY}}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
       - name: Build and push image
         id: push
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: src/${{ env.APP_NAME }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v1
         with:
-          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
         
