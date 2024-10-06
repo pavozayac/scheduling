@@ -3,17 +3,20 @@ name: container-service - run tests
 on:
   push:
     paths: 
-      - src/container-service/**
+      - src/constraint-service/**
   pull_request: 
     paths: 
-      - src/container-service/**
+      - src/constraint-service/**
 
 env:
   GO_VER: '1.22.5'
 
+defaults:
+  run:
+    working-directory: src/constraint-service/
+
 jobs:
   test:
-
     runs-on: ubuntu-latest
 
     steps:
