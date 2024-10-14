@@ -3,7 +3,7 @@ package tests
 import (
 	"testing"
 
-	"github.com/pavozayac/scheduling/src/constraint-service/tests/shared"
+	"github.com/pavozayac/scheduling/src/constraint-service/internal/tests/shared"
 	"github.com/stretchr/testify/assert"
 )
 

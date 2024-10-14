@@ -7,7 +7,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gin-gonic/gin"
-	"github.com/pavozayac/scheduling/src/constraint-service/graph"
+	"github.com/pavozayac/scheduling/src/constraint-service/internal/application/graph"
 )
 
 const defaultPort = "8080"
