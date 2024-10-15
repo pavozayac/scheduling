@@ -7,7 +7,258 @@ package sqlc
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
+
+const getAllConstraintsForLocation = `-- name: GetAllConstraintsForLocation :many
+SELECT location_id, task_id, worker_id, start_slot, end_slot, kind from constraints WHERE location_id = $1
+`
+
+func (q *Queries) GetAllConstraintsForLocation(ctx context.Context, locationID pgtype.Int4) ([]Constraint, error) {
+	rows, err := q.db.Query(ctx, getAllConstraintsForLocation, locationID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Constraint
+	for rows.Next() {
+		var i Constraint
+		if err := rows.Scan(
+			&i.LocationID,
+			&i.TaskID,
+			&i.WorkerID,
+			&i.StartSlot,
+			&i.EndSlot,
+			&i.Kind,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAllConstraintsForTask = `-- name: GetAllConstraintsForTask :many
+SELECT location_id, task_id, worker_id, start_slot, end_slot, kind from constraints WHERE task_id = $1
+`
+
+func (q *Queries) GetAllConstraintsForTask(ctx context.Context, taskID pgtype.Int4) ([]Constraint, error) {
+	rows, err := q.db.Query(ctx, getAllConstraintsForTask, taskID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Constraint
+	for rows.Next() {
+		var i Constraint
+		if err := rows.Scan(
+			&i.LocationID,
+			&i.TaskID,
+			&i.WorkerID,
+			&i.StartSlot,
+			&i.EndSlot,
+			&i.Kind,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAllConstraintsForWorker = `-- name: GetAllConstraintsForWorker :many
+SELECT location_id, task_id, worker_id, start_slot, end_slot, kind from constraints WHERE worker_id = $1
+`
+
+func (q *Queries) GetAllConstraintsForWorker(ctx context.Context, workerID pgtype.Int4) ([]Constraint, error) {
+	rows, err := q.db.Query(ctx, getAllConstraintsForWorker, workerID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Constraint
+	for rows.Next() {
+		var i Constraint
+		if err := rows.Scan(
+			&i.LocationID,
+			&i.TaskID,
+			&i.WorkerID,
+			&i.StartSlot,
+			&i.EndSlot,
+			&i.Kind,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAllLocations = `-- name: GetAllLocations :many
+SELECT id, title, story, schedule_id from locations
+`
+
+func (q *Queries) GetAllLocations(ctx context.Context) ([]Location, error) {
+	rows, err := q.db.Query(ctx, getAllLocations)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Location
+	for rows.Next() {
+		var i Location
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Story,
+			&i.ScheduleID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAllSchedules = `-- name: GetAllSchedules :many
+SELECT id, title from schedules
+`
+
+func (q *Queries) GetAllSchedules(ctx context.Context) ([]Schedule, error) {
+	rows, err := q.db.Query(ctx, getAllSchedules)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Schedule
+	for rows.Next() {
+		var i Schedule
+		if err := rows.Scan(&i.ID, &i.Title); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAllTasks = `-- name: GetAllTasks :many
+SELECT id, title, story, schedule_id from tasks
+`
+
+func (q *Queries) GetAllTasks(ctx context.Context) ([]Task, error) {
+	rows, err := q.db.Query(ctx, getAllTasks)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Task
+	for rows.Next() {
+		var i Task
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Story,
+			&i.ScheduleID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAllWorkers = `-- name: GetAllWorkers :many
+SELECT id, title, schedule_id from workers
+`
+
+func (q *Queries) GetAllWorkers(ctx context.Context) ([]Worker, error) {
+	rows, err := q.db.Query(ctx, getAllWorkers)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Worker
+	for rows.Next() {
+		var i Worker
+		if err := rows.Scan(&i.ID, &i.Title, &i.ScheduleID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getConstraint = `-- name: GetConstraint :one
+SELECT location_id, task_id, worker_id, start_slot, end_slot, kind from constraints WHERE location_id = $1 AND task_id = $2 AND worker_id = $3 AND start_slot = $4 AND end_slot = $5 AND kind = $6
+`
+
+type GetConstraintParams struct {
+	LocationID pgtype.Int4
+	TaskID     pgtype.Int4
+	WorkerID   pgtype.Int4
+	StartSlot  pgtype.Int4
+	EndSlot    pgtype.Int4
+	Kind       ConstraintType
+}
+
+func (q *Queries) GetConstraint(ctx context.Context, arg GetConstraintParams) (Constraint, error) {
+	row := q.db.QueryRow(ctx, getConstraint,
+		arg.LocationID,
+		arg.TaskID,
+		arg.WorkerID,
+		arg.StartSlot,
+		arg.EndSlot,
+		arg.Kind,
+	)
+	var i Constraint
+	err := row.Scan(
+		&i.LocationID,
+		&i.TaskID,
+		&i.WorkerID,
+		&i.StartSlot,
+		&i.EndSlot,
+		&i.Kind,
+	)
+	return i, err
+}
+
+const getLocation = `-- name: GetLocation :one
+SELECT id, title, story, schedule_id from locations WHERE id = $1
+`
+
+func (q *Queries) GetLocation(ctx context.Context, id int32) (Location, error) {
+	row := q.db.QueryRow(ctx, getLocation, id)
+	var i Location
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.Story,
+		&i.ScheduleID,
+	)
+	return i, err
+}
 
 const getSchedule = `-- name: GetSchedule :one
 SELECT id, title from schedules WHERE id = $1
@@ -17,6 +268,22 @@ func (q *Queries) GetSchedule(ctx context.Context, id int32) (Schedule, error) {
 	row := q.db.QueryRow(ctx, getSchedule, id)
 	var i Schedule
 	err := row.Scan(&i.ID, &i.Title)
+	return i, err
+}
+
+const getTask = `-- name: GetTask :one
+SELECT id, title, story, schedule_id from tasks WHERE id = $1
+`
+
+func (q *Queries) GetTask(ctx context.Context, id int32) (Task, error) {
+	row := q.db.QueryRow(ctx, getTask, id)
+	var i Task
+	err := row.Scan(
+		&i.ID,
+		&i.Title,
+		&i.Story,
+		&i.ScheduleID,
+	)
 	return i, err
 }
 

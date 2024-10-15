@@ -53,26 +53,20 @@ func (ns NullConstraintType) Value() (driver.Value, error) {
 	return string(ns.ConstraintType), nil
 }
 
+type Constraint struct {
+	LocationID pgtype.Int4
+	TaskID     pgtype.Int4
+	WorkerID   pgtype.Int4
+	StartSlot  pgtype.Int4
+	EndSlot    pgtype.Int4
+	Kind       ConstraintType
+}
+
 type Location struct {
 	ID         int32
 	Title      string
 	Story      string
 	ScheduleID int32
-}
-
-type LocationTaskConstraint struct {
-	ID         int32
-	LocationID pgtype.Int4
-	TaskID     int32
-	Kind       ConstraintType
-}
-
-type LocationTimeConstraint struct {
-	ID         int32
-	LocationID int32
-	StartSlot  int32
-	EndSlot    int32
-	Kind       ConstraintType
 }
 
 type Schedule struct {
@@ -87,31 +81,8 @@ type Task struct {
 	ScheduleID int32
 }
 
-type TaskTimeConstraint struct {
-	ID        int32
-	TaskID    int32
-	StartSlot int32
-	EndSlot   int32
-	Kind      ConstraintType
-}
-
 type Worker struct {
 	ID         int32
 	Title      string
 	ScheduleID int32
-}
-
-type WorkerTaskConstraint struct {
-	ID       int32
-	WorkerID int32
-	TaskID   int32
-	Kind     ConstraintType
-}
-
-type WorkerTimeConstraint struct {
-	ID        int32
-	WorkerID  int32
-	StartSlot int32
-	EndSlot   int32
-	Kind      ConstraintType
 }
