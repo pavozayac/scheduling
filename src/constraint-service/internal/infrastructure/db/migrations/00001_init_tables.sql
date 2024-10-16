@@ -28,6 +28,7 @@ CREATE TABLE locations (
 CREATE TYPE constraint_type as ENUM ('must', 'cant');
 
 CREATE TABLE constraints (
+    schedule_id integer REFERENCES schedules(id),
     location_id integer REFERENCES locations(id),
     task_id integer REFERENCES tasks(id),
     worker_id integer REFERENCES workers(id),

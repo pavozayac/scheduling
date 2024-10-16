@@ -54,6 +54,7 @@ func (ns NullConstraintType) Value() (driver.Value, error) {
 }
 
 type Constraint struct {
+	ScheduleID pgtype.Int4
 	LocationID pgtype.Int4
 	TaskID     pgtype.Int4
 	WorkerID   pgtype.Int4

@@ -12,7 +12,7 @@ import (
 )
 
 const getAllConstraintsForLocation = `-- name: GetAllConstraintsForLocation :many
-SELECT location_id, task_id, worker_id, start_slot, end_slot, kind from constraints WHERE location_id = $1
+SELECT schedule_id, location_id, task_id, worker_id, start_slot, end_slot, kind from constraints WHERE location_id = $1
 `
 
 func (q *Queries) GetAllConstraintsForLocation(ctx context.Context, locationID pgtype.Int4) ([]Constraint, error) {
@@ -25,6 +25,7 @@ func (q *Queries) GetAllConstraintsForLocation(ctx context.Context, locationID p
 	for rows.Next() {
 		var i Constraint
 		if err := rows.Scan(
+			&i.ScheduleID,
 			&i.LocationID,
 			&i.TaskID,
 			&i.WorkerID,
@@ -43,7 +44,7 @@ func (q *Queries) GetAllConstraintsForLocation(ctx context.Context, locationID p
 }
 
 const getAllConstraintsForTask = `-- name: GetAllConstraintsForTask :many
-SELECT location_id, task_id, worker_id, start_slot, end_slot, kind from constraints WHERE task_id = $1
+SELECT schedule_id, location_id, task_id, worker_id, start_slot, end_slot, kind from constraints WHERE task_id = $1
 `
 
 func (q *Queries) GetAllConstraintsForTask(ctx context.Context, taskID pgtype.Int4) ([]Constraint, error) {
@@ -56,6 +57,7 @@ func (q *Queries) GetAllConstraintsForTask(ctx context.Context, taskID pgtype.In
 	for rows.Next() {
 		var i Constraint
 		if err := rows.Scan(
+			&i.ScheduleID,
 			&i.LocationID,
 			&i.TaskID,
 			&i.WorkerID,
@@ -74,7 +76,7 @@ func (q *Queries) GetAllConstraintsForTask(ctx context.Context, taskID pgtype.In
 }
 
 const getAllConstraintsForWorker = `-- name: GetAllConstraintsForWorker :many
-SELECT location_id, task_id, worker_id, start_slot, end_slot, kind from constraints WHERE worker_id = $1
+SELECT schedule_id, location_id, task_id, worker_id, start_slot, end_slot, kind from constraints WHERE worker_id = $1
 `
 
 func (q *Queries) GetAllConstraintsForWorker(ctx context.Context, workerID pgtype.Int4) ([]Constraint, error) {
@@ -87,6 +89,7 @@ func (q *Queries) GetAllConstraintsForWorker(ctx context.Context, workerID pgtyp
 	for rows.Next() {
 		var i Constraint
 		if err := rows.Scan(
+			&i.ScheduleID,
 			&i.LocationID,
 			&i.TaskID,
 			&i.WorkerID,
@@ -211,7 +214,7 @@ func (q *Queries) GetAllWorkers(ctx context.Context) ([]Worker, error) {
 }
 
 const getConstraint = `-- name: GetConstraint :one
-SELECT location_id, task_id, worker_id, start_slot, end_slot, kind from constraints WHERE location_id = $1 AND task_id = $2 AND worker_id = $3 AND start_slot = $4 AND end_slot = $5 AND kind = $6
+SELECT schedule_id, location_id, task_id, worker_id, start_slot, end_slot, kind from constraints WHERE location_id = $1 AND task_id = $2 AND worker_id = $3 AND start_slot = $4 AND end_slot = $5 AND kind = $6
 `
 
 type GetConstraintParams struct {
@@ -234,6 +237,7 @@ func (q *Queries) GetConstraint(ctx context.Context, arg GetConstraintParams) (C
 	)
 	var i Constraint
 	err := row.Scan(
+		&i.ScheduleID,
 		&i.LocationID,
 		&i.TaskID,
 		&i.WorkerID,
