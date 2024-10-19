@@ -4,6 +4,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/pavozayac/scheduling/src/constraint-service/internal/domain/shared"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -49,15 +50,15 @@ func TestShouldThrowOnInvalidPairConstraints(t *testing.T) {
 	}{
 		{
 			Input{-1, 2000, 3000, Must},
-			Output{Constraint{}, ErrNegativeId},
+			Output{Constraint{}, shared.ErrNegativeId},
 		},
 		{
 			Input{1234, -1, 3000, Cannot},
-			Output{Constraint{}, ErrNegativeId},
+			Output{Constraint{}, shared.ErrNegativeId},
 		},
 		{
 			Input{1234, 141, -1, Must},
-			Output{Constraint{}, ErrNegativeId},
+			Output{Constraint{}, shared.ErrNegativeId},
 		},
 	}
 
@@ -123,7 +124,7 @@ func TestShouldThrowOnInvalidTimeConstraints(t *testing.T) {
 				c, err := constructor.function(testcase.input.scheduleId, testcase.input.id, testcase.input.startTime, testcase.input.endTime, Must)
 
 				assert.Equal(t, testcase.output.expectedConstraint, c)
-				assert.ErrorIs(t, err, ErrInvalidArguments)
+				assert.ErrorIs(t, err, shared.ErrInvalidArguments)
 			})
 		}
 	}

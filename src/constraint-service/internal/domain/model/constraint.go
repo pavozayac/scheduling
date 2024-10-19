@@ -1,7 +1,8 @@
 package model
 
 import (
-	"errors"
+	"github.com/pavozayac/scheduling/src/constraint-service/internal/domain/shared"
+	. "github.com/pavozayac/scheduling/src/constraint-service/internal/domain/shared"
 )
 
 type ConstraintType string
@@ -33,12 +34,11 @@ func newConstraint(scheduleId, workerId, taskId, locationId, startTime, endTime 
 	}
 }
 
-var ErrNegativeId = errors.New("id arguments must be greater than or equal to 0")
-
 func NewTaskWorkerConstraint(scheduleId, workerId, taskId int, constraintType ConstraintType) (Constraint, error) {
 	if scheduleId < 0 || workerId < 0 || taskId < 0 {
-		return Constraint{}, ErrNegativeId
+		return Constraint{}, shared.ErrNegativeId
 	}
+
 	return newConstraint(scheduleId, workerId, taskId, -1, -1, -1, constraintType), nil
 }
 
@@ -55,8 +55,6 @@ func NewLocationWorkerConstraint(scheduleId, locationId, workerId int, constrain
 	}
 	return newConstraint(scheduleId, workerId, -1, locationId, -1, -1, constraintType), nil
 }
-
-var ErrInvalidArguments = errors.New("scheduleId, workerId, and taskId must not be nullish")
 
 func NewLocationTimeConstraint(scheduleId, locationId, startTime, endTime int, constraintType ConstraintType) (Constraint, error) {
 	if scheduleId < 0 || locationId < 0 || startTime >= endTime {
