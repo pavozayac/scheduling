@@ -2,7 +2,6 @@ package model
 
 import (
 	"github.com/pavozayac/scheduling/src/constraint-service/internal/domain/shared"
-	. "github.com/pavozayac/scheduling/src/constraint-service/internal/domain/shared"
 )
 
 type ConstraintType string
@@ -44,35 +43,35 @@ func NewTaskWorkerConstraint(scheduleId, workerId, taskId int, constraintType Co
 
 func NewLocationTaskConstraint(scheduleId, locationId, taskId int, constraintType ConstraintType) (Constraint, error) {
 	if scheduleId < 0 || locationId < 0 || taskId < 0 {
-		return Constraint{}, ErrNegativeId
+		return Constraint{}, shared.ErrNegativeId
 	}
 	return newConstraint(scheduleId, -1, taskId, locationId, -1, -1, constraintType), nil
 }
 
 func NewLocationWorkerConstraint(scheduleId, locationId, workerId int, constraintType ConstraintType) (Constraint, error) {
 	if scheduleId < 0 || locationId < 0 || workerId < 0 {
-		return Constraint{}, ErrNegativeId
+		return Constraint{}, shared.ErrNegativeId
 	}
 	return newConstraint(scheduleId, workerId, -1, locationId, -1, -1, constraintType), nil
 }
 
 func NewLocationTimeConstraint(scheduleId, locationId, startTime, endTime int, constraintType ConstraintType) (Constraint, error) {
 	if scheduleId < 0 || locationId < 0 || startTime >= endTime {
-		return Constraint{}, ErrInvalidArguments
+		return Constraint{}, shared.ErrInvalidArguments
 	}
 
 	return newConstraint(scheduleId, -1, -1, locationId, startTime, endTime, constraintType), nil
 }
 func NewWorkerTimeConstraint(scheduleId, workerId, startTime, endTime int, constraintType ConstraintType) (Constraint, error) {
 	if scheduleId < 0 || workerId < 0 || startTime >= endTime {
-		return Constraint{}, ErrInvalidArguments
+		return Constraint{}, shared.ErrInvalidArguments
 	}
 	return newConstraint(scheduleId, workerId, -1, -1, startTime, endTime, constraintType), nil
 }
 
 func NewTaskTimeConstraint(scheduleId, taskId, startTime, endTime int, constraintType ConstraintType) (Constraint, error) {
 	if scheduleId < 0 || taskId < 0 || startTime >= endTime {
-		return Constraint{}, ErrInvalidArguments
+		return Constraint{}, shared.ErrInvalidArguments
 	}
 	return newConstraint(scheduleId, -1, taskId, -1, startTime, endTime, constraintType), nil
 }
