@@ -1,6 +1,8 @@
 package model
 
-import "errors"
+import (
+	"github.com/pavozayac/scheduling/src/constraint-service/internal/domain/shared"
+)
 
 type Schedule struct {
 	id          int
@@ -10,7 +12,7 @@ type Schedule struct {
 
 func NewSchedule(id int, title string, constraints Constraints) (*Schedule, error) {
 	if id < 0 || title == "" || constraints == nil {
-		return nil, errors.New("id, title, locations, tasks, workers, and constraints must not be nullish")
+		return nil, shared.ErrInvalidArguments
 	}
 
 	return &Schedule{
@@ -30,12 +32,8 @@ func (s *Schedule) Equals(other *Schedule) bool {
 
 func (s *Schedule) AddConstraint(constraint Constraint) error {
 	for _, c := range s.constraints {
-		if c.Equals(constraint) {
-			return errors.New("constraint already exists")
-		}
-
-		if c.ConflictsWith(constraint) {
-			return errors.New("constraint conflicts with existing constraint")
+		if c.Equals(constraint) || c.ConflictsWith(constraint) {
+			return shared.ErrConflictingConstraint
 		}
 	}
 
@@ -52,5 +50,5 @@ func (s *Schedule) RemoveConstraint(constraint Constraint) error {
 		}
 	}
 
-	return errors.New("constraint does not exist")
+	return shared.ErrNotFound
 }
