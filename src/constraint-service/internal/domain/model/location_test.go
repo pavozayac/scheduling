@@ -10,55 +10,55 @@ import (
 func TestNewLocation(t *testing.T) {
 	testcases := []struct {
 		name             string
-		id               int
+		id               shared.Identity
 		locationName     string
 		description      string
-		scheduleId       int
+		scheduleId       shared.Identity
 		expectedError    error
 		expectedLocation *Location
 	}{
 		{
 			name:             "Valid Location",
-			id:               1,
+			id:               mockId1,
 			locationName:     "Location A",
 			description:      "Description A",
-			scheduleId:       100,
+			scheduleId:       mockId2,
 			expectedError:    nil,
-			expectedLocation: &Location{id: 1, name: "Location A", description: "Description A", scheduleId: 100},
+			expectedLocation: &Location{id: mockId1, name: "Location A", description: "Description A", scheduleId: mockId2},
 		},
 		{
 			name:             "Invalid Location - Negative ID",
-			id:               -1,
+			id:               shared.NilIdentity,
 			locationName:     "Location B",
 			description:      "Description B",
-			scheduleId:       101,
+			scheduleId:       mockId2,
 			expectedError:    shared.ErrInvalidArguments,
 			expectedLocation: nil,
 		},
 		{
 			name:             "Invalid Location - Empty Name",
-			id:               2,
+			id:               mockId1,
 			locationName:     "",
 			description:      "Description C",
-			scheduleId:       102,
+			scheduleId:       mockId2,
 			expectedError:    shared.ErrInvalidArguments,
 			expectedLocation: nil,
 		},
 		{
 			name:             "Invalid Location - Empty Description",
-			id:               3,
+			id:               mockId1,
 			locationName:     "Location D",
 			description:      "",
-			scheduleId:       103,
+			scheduleId:       mockId2,
 			expectedError:    shared.ErrInvalidArguments,
 			expectedLocation: nil,
 		},
 		{
 			name:             "Invalid Location - Negative ScheduleId",
-			id:               4,
+			id:               mockId1,
 			locationName:     "Location E",
 			description:      "Description E",
-			scheduleId:       -104,
+			scheduleId:       shared.NilIdentity,
 			expectedError:    shared.ErrInvalidArguments,
 			expectedLocation: nil,
 		},
@@ -83,26 +83,26 @@ func TestLocation_Equals(t *testing.T) {
 	}{
 		{
 			name:     "Equal Locations",
-			l1:       &Location{id: 1, name: "Location A", description: "Description A", scheduleId: 100},
-			l2:       &Location{id: 1, name: "Location A", description: "Description A", scheduleId: 100},
+			l1:       &Location{id: mockId1, name: "Location A", description: "Description A", scheduleId: mockId2},
+			l2:       &Location{id: mockId1, name: "Location A", description: "Description A", scheduleId: mockId2},
 			expected: true,
 		},
 		{
 			name:     "Different IDs",
-			l1:       &Location{id: 1, name: "Location A", description: "Description A", scheduleId: 100},
-			l2:       &Location{id: 2, name: "Location B", description: "Description B", scheduleId: 101},
+			l1:       &Location{id: mockId1, name: "Location A", description: "Description A", scheduleId: mockId2},
+			l2:       &Location{id: mockId3, name: "Location B", description: "Description B", scheduleId: mockId4},
 			expected: false,
 		},
 		{
 			name:     "Different IDs, same data",
-			l1:       &Location{id: 1, name: "Location A", description: "Description A", scheduleId: 100},
-			l2:       &Location{id: 2, name: "Location A", description: "Description A", scheduleId: 100},
+			l1:       &Location{id: mockId1, name: "Location A", description: "Description A", scheduleId: mockId2},
+			l2:       &Location{id: mockId3, name: "Location A", description: "Description A", scheduleId: mockId2},
 			expected: false,
 		},
 		{
 			name:     "Nil Location",
 			l1:       nil,
-			l2:       &Location{id: 1, name: "Location A", description: "Description A", scheduleId: 100},
+			l2:       &Location{id: mockId1, name: "Location A", description: "Description A", scheduleId: mockId2},
 			expected: false,
 		},
 		{

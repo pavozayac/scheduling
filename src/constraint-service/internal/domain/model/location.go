@@ -5,14 +5,14 @@ import (
 )
 
 type Location struct {
-	id          int
+	id          shared.Identity
 	name        string
 	description string
-	scheduleId  int
+	scheduleId  shared.Identity
 }
 
-func NewLocation(id int, name string, description string, scheduleId int) (*Location, error) {
-	if id <= 0 || name == "" || description == "" || scheduleId <= 0 {
+func NewLocation(id shared.Identity, name string, description string, scheduleId shared.Identity) (*Location, error) {
+	if id == shared.NilIdentity || name == "" || description == "" || scheduleId == shared.NilIdentity {
 		return nil, shared.ErrInvalidArguments
 	}
 
