@@ -5,13 +5,13 @@ import (
 )
 
 type Schedule struct {
-	id          int
+	id          shared.Identity
 	title       string
 	constraints Constraints
 }
 
-func NewSchedule(id int, title string, constraints Constraints) (*Schedule, error) {
-	if id < 0 || title == "" || constraints == nil {
+func NewSchedule(id shared.Identity, title string, constraints Constraints) (*Schedule, error) {
+	if id == shared.NilIdentity || title == "" || constraints == nil {
 		return nil, shared.ErrInvalidArguments
 	}
 

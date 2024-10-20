@@ -10,7 +10,7 @@ import (
 func TestShouldCreateNewSchedule(t *testing.T) {
 	testcases := []struct {
 		name             string
-		id               int
+		id               shared.Identity
 		title            string
 		constraints      Constraints
 		expectedError    error
@@ -18,15 +18,15 @@ func TestShouldCreateNewSchedule(t *testing.T) {
 	}{
 		{
 			"Valid Schedule",
-			1,
+			mockId1,
 			"Schedule 1",
 			Constraints{},
 			nil,
-			&Schedule{1, "Schedule 1", Constraints{}},
+			&Schedule{mockId1, "Schedule 1", Constraints{}},
 		},
 		{
 			"Invalid Schedule - Negative ID",
-			-1,
+			shared.NilIdentity,
 			"Schedule 2",
 			Constraints{},
 			shared.ErrInvalidArguments,
@@ -34,7 +34,7 @@ func TestShouldCreateNewSchedule(t *testing.T) {
 		},
 		{
 			"Invalid Schedule - Empty Title",
-			2,
+			mockId1,
 			"",
 			Constraints{},
 			shared.ErrInvalidArguments,
@@ -42,7 +42,7 @@ func TestShouldCreateNewSchedule(t *testing.T) {
 		},
 		{
 			"Invalid Schedule - Nil Constraints",
-			3,
+			mockId2,
 			"Schedule 3",
 			nil,
 			shared.ErrInvalidArguments,
@@ -69,26 +69,26 @@ func TestShouldIndicateScheduleEquality(t *testing.T) {
 	}{
 		{
 			"Equal Schedules",
-			&Schedule{1, "Schedule 1", Constraints{}},
-			&Schedule{1, "Schedule 1", Constraints{}},
+			&Schedule{mockId1, "Schedule 1", Constraints{}},
+			&Schedule{mockId1, "Schedule 1", Constraints{}},
 			true,
 		},
 		{
 			"Different IDs",
-			&Schedule{1, "Schedule 1", Constraints{}},
-			&Schedule{2, "Schedule 2", Constraints{}},
+			&Schedule{mockId1, "Schedule 1", Constraints{}},
+			&Schedule{mockId2, "Schedule 2", Constraints{}},
 			false,
 		},
 		{
 			"Different IDs, same data",
-			&Schedule{1, "Schedule 1", Constraints{}},
-			&Schedule{2, "Schedule 1", Constraints{}},
+			&Schedule{mockId1, "Schedule 1", Constraints{}},
+			&Schedule{mockId2, "Schedule 1", Constraints{}},
 			false,
 		},
 		{
 			"Nil Schedule",
 			nil,
-			&Schedule{1, "Schedule 1", Constraints{}},
+			&Schedule{mockId1, "Schedule 1", Constraints{}},
 			false,
 		},
 		{
@@ -108,7 +108,7 @@ func TestShouldIndicateScheduleEquality(t *testing.T) {
 }
 
 func TestShouldAddConstraint(t *testing.T) {
-	schedule := &Schedule{1, "Schedule 1", Constraints{}}
+	schedule := &Schedule{mockId1, "Schedule 1", Constraints{}}
 	constraint := Constraint{ /*...*/ }
 
 	err := schedule.AddConstraint(constraint)
@@ -118,7 +118,7 @@ func TestShouldAddConstraint(t *testing.T) {
 
 func TestShouldNotAddDuplicateConstraint(t *testing.T) {
 	constraint := Constraint{ /*...*/ }
-	schedule := &Schedule{1, "Schedule 1", Constraints{constraint}}
+	schedule := &Schedule{mockId1, "Schedule 1", Constraints{constraint}}
 
 	err := schedule.AddConstraint(constraint)
 
@@ -129,7 +129,7 @@ func TestShouldNotAddDuplicateConstraint(t *testing.T) {
 func TestShouldNotAddConflictingConstraint(t *testing.T) {
 	constraint1 := Constraint{ /*...*/ }
 	constraint2 := Constraint{ /*...*/ }
-	schedule := &Schedule{1, "Schedule 1", Constraints{constraint1}}
+	schedule := &Schedule{mockId1, "Schedule 1", Constraints{constraint1}}
 
 	// Assuming ConflictsWith is implemented
 	err := schedule.AddConstraint(constraint2)
@@ -139,7 +139,7 @@ func TestShouldNotAddConflictingConstraint(t *testing.T) {
 
 func TestShouldRemoveConstraint(t *testing.T) {
 	constraint := Constraint{ /*...*/ }
-	schedule := &Schedule{1, "Schedule 1", Constraints{constraint}}
+	schedule := &Schedule{mockId1, "Schedule 1", Constraints{constraint}}
 
 	err := schedule.RemoveConstraint(constraint)
 	assert.Nil(t, err)
@@ -148,7 +148,7 @@ func TestShouldRemoveConstraint(t *testing.T) {
 
 func TestShouldNotRemoveNonExistentConstraint(t *testing.T) {
 	constraint := Constraint{ /*...*/ }
-	schedule := &Schedule{1, "Schedule 1", Constraints{}}
+	schedule := &Schedule{mockId1, "Schedule 1", Constraints{}}
 
 	err := schedule.RemoveConstraint(constraint)
 	assert.NotNil(t, err)
