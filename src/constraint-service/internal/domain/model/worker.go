@@ -5,22 +5,22 @@ import (
 )
 
 type Worker struct {
-	id         int
+	id         shared.Identity
+	scheduleId shared.Identity
 	firstName  string
 	lastName   string
-	scheduleId int
 }
 
-func NewWorker(id int, firstName, lastName string, scheduleId int) (*Worker, error) {
-	if id < 0 || scheduleId < 0 || firstName == "" || lastName == "" {
+func NewWorker(id shared.Identity, scheduleId shared.Identity, firstName, lastName string) (*Worker, error) {
+	if id == shared.NilIdentity || scheduleId == shared.NilIdentity || firstName == "" || lastName == "" {
 		return nil, shared.ErrInvalidArguments
 	}
 
 	return &Worker{
 		id:         id,
+		scheduleId: scheduleId,
 		firstName:  firstName,
 		lastName:   lastName,
-		scheduleId: scheduleId,
 	}, nil
 }
 
