@@ -10,55 +10,55 @@ import (
 func TestShouldCreateNewTask(t *testing.T) {
 	testcases := []struct {
 		name          string
-		id            int
+		id            shared.Identity
+		scheduleId    shared.Identity
 		taskName      string
 		description   string
-		scheduleID    int
 		expectedError error
 		expectedTask  *Task
 	}{
 		{
 			"Valid Task",
-			1,
+			mockId1,
+			mockId2,
 			"Task A",
 			"Description A",
-			1,
 			nil,
-			&Task{1, "Task A", "Description A", 1},
+			&Task{mockId1, mockId2, "Task A", "Description A"},
 		},
 		{
-			"Invalid Task - Negative ID",
-			-1,
+			"Invalid Task - Nil ID",
+			shared.NilIdentity,
+			mockId1,
 			"Task B",
 			"Description B",
-			2,
 			shared.ErrInvalidArguments,
 			nil,
 		},
 		{
 			"Invalid Task - Empty Name",
-			2,
+			mockId1,
+			mockId2,
 			"",
 			"Description C",
-			3,
 			shared.ErrInvalidArguments,
 			nil,
 		},
 		{
 			"Invalid Task - Empty Description",
-			3,
+			mockId1,
+			mockId2,
 			"Task D",
 			"",
-			4,
 			shared.ErrInvalidArguments,
 			nil,
 		},
 		{
 			"Invalid Task - Negative Schedule ID",
-			4,
+			mockId1,
+			shared.NilIdentity,
 			"Task E",
 			"Description E",
-			-1,
 			shared.ErrInvalidArguments,
 			nil,
 		},
@@ -66,7 +66,7 @@ func TestShouldCreateNewTask(t *testing.T) {
 
 	for _, testcase := range testcases {
 		t.Run(testcase.name, func(t *testing.T) {
-			task, err := NewTask(testcase.id, testcase.scheduleID, testcase.taskName, testcase.description)
+			task, err := NewTask(testcase.id, testcase.scheduleId, testcase.taskName, testcase.description)
 
 			assert.Equal(t, testcase.expectedTask, task)
 			assert.ErrorIs(t, err, testcase.expectedError)
@@ -83,26 +83,26 @@ func TestShouldIndicateEquality(t *testing.T) {
 	}{
 		{
 			"Equal Tasks",
-			&Task{1, "Task A", "Description A", 1},
-			&Task{1, "Task A", "Description A", 1},
+			&Task{mockId1, mockId1, "Task A", "Description A"},
+			&Task{mockId1, mockId1, "Task A", "Description A"},
 			true,
 		},
 		{
 			"Different IDs",
-			&Task{1, "Task A", "Description A", 1},
-			&Task{2, "Task B", "Description B", 2},
+			&Task{mockId1, mockId1, "Task A", "Description A"},
+			&Task{mockId2, mockId2, "Task B", "Description B"},
 			false,
 		},
 		{
 			"Different IDs, same data",
-			&Task{1, "Task A", "Description A", 1},
-			&Task{2, "Task A", "Description A", 1},
+			&Task{mockId1, mockId1, "Task A", "Description A"},
+			&Task{mockId2, mockId1, "Task A", "Description A"},
 			false,
 		},
 		{
 			"Nil Task",
 			nil,
-			&Task{1, "Task A", "Description A", 1},
+			&Task{mockId1, mockId1, "Task A", "Description A"},
 			false,
 		},
 		{
