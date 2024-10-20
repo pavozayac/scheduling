@@ -35,28 +35,28 @@ func newConstraint(scheduleId, workerId, taskId, locationId shared.Identity, sta
 
 func NewTaskWorkerConstraint(scheduleId, workerId, taskId shared.Identity, constraintType ConstraintType) (Constraint, error) {
 	if scheduleId == shared.NilIdentity || workerId == shared.NilIdentity || taskId == shared.NilIdentity {
-		return Constraint{}, shared.ErrNegativeId
+		return Constraint{}, shared.ErrNilIdentity
 	}
 	return newConstraint(scheduleId, workerId, taskId, shared.NilIdentity, -1, -1, constraintType), nil
 }
 
 func NewLocationTaskConstraint(scheduleId, locationId, taskId shared.Identity, constraintType ConstraintType) (Constraint, error) {
 	if scheduleId == shared.NilIdentity || locationId == shared.NilIdentity || taskId == shared.NilIdentity {
-		return Constraint{}, shared.ErrNegativeId
+		return Constraint{}, shared.ErrNilIdentity
 	}
 	return newConstraint(scheduleId, shared.NilIdentity, taskId, locationId, -1, -1, constraintType), nil
 }
 
 func NewLocationWorkerConstraint(scheduleId, locationId, workerId shared.Identity, constraintType ConstraintType) (Constraint, error) {
 	if scheduleId == shared.NilIdentity || locationId == shared.NilIdentity || workerId == shared.NilIdentity {
-		return Constraint{}, shared.ErrNegativeId
+		return Constraint{}, shared.ErrNilIdentity
 	}
 	return newConstraint(scheduleId, workerId, shared.NilIdentity, locationId, -1, -1, constraintType), nil
 }
 
 func NewLocationTimeConstraint(scheduleId, locationId shared.Identity, startTime, endTime int, constraintType ConstraintType) (Constraint, error) {
 	if scheduleId == shared.NilIdentity || locationId == shared.NilIdentity {
-		return Constraint{}, shared.ErrNegativeId
+		return Constraint{}, shared.ErrNilIdentity
 	}
 	if startTime >= endTime || startTime < 0 || endTime < 0 {
 		return Constraint{}, shared.ErrInvalidArguments
@@ -66,7 +66,7 @@ func NewLocationTimeConstraint(scheduleId, locationId shared.Identity, startTime
 
 func NewWorkerTimeConstraint(scheduleId, workerId shared.Identity, startTime, endTime int, constraintType ConstraintType) (Constraint, error) {
 	if scheduleId == shared.NilIdentity || workerId == shared.NilIdentity {
-		return Constraint{}, shared.ErrNegativeId
+		return Constraint{}, shared.ErrNilIdentity
 	}
 	if startTime >= endTime || startTime < 0 || endTime < 0 {
 		return Constraint{}, shared.ErrInvalidArguments
@@ -76,7 +76,7 @@ func NewWorkerTimeConstraint(scheduleId, workerId shared.Identity, startTime, en
 
 func NewTaskTimeConstraint(scheduleId, taskId shared.Identity, startTime, endTime int, constraintType ConstraintType) (Constraint, error) {
 	if scheduleId == shared.NilIdentity || taskId == shared.NilIdentity {
-		return Constraint{}, shared.ErrNegativeId
+		return Constraint{}, shared.ErrNilIdentity
 	}
 	if startTime >= endTime || startTime < 0 || endTime < 0 {
 		return Constraint{}, shared.ErrInvalidArguments

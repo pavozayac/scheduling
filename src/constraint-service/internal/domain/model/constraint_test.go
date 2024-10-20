@@ -54,15 +54,15 @@ func TestShouldThrowOnInvalidPairConstraints(t *testing.T) {
 	}{
 		{
 			Input{shared.NilIdentity, mockId2, mockId3, Must},
-			Output{Constraint{}, shared.ErrNegativeId},
+			Output{Constraint{}, shared.ErrNilIdentity},
 		},
 		{
 			Input{mockId1, shared.NilIdentity, mockId3, Cannot},
-			Output{Constraint{}, shared.ErrNegativeId},
+			Output{Constraint{}, shared.ErrNilIdentity},
 		},
 		{
 			Input{mockId1, mockId2, shared.NilIdentity, Must},
-			Output{Constraint{}, shared.ErrNegativeId},
+			Output{Constraint{}, shared.ErrNilIdentity},
 		},
 	}
 
