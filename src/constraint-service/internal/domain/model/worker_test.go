@@ -10,55 +10,55 @@ import (
 func TestShouldCreateNewWorker(t *testing.T) {
 	testcases := []struct {
 		name           string
-		id             int
+		id             shared.Identity
+		scheduleId     shared.Identity
 		firstName      string
 		lastName       string
-		scheduleID     int
 		expectedError  error
 		expectedWorker *Worker
 	}{
 		{
 			"Valid Worker",
-			1,
+			mockId1,
+			mockId1,
 			"John",
 			"Doe",
-			1,
 			nil,
-			&Worker{1, "John", "Doe", 1},
+			&Worker{mockId1, mockId1, "John", "Doe"},
 		},
 		{
 			"Invalid Worker - Negative ID",
-			-1,
+			shared.NilIdentity,
+			mockId2,
 			"Jane",
 			"Doe",
-			2,
 			shared.ErrInvalidArguments,
 			nil,
 		},
 		{
 			"Invalid Worker - Empty First Name",
-			2,
+			mockId2,
+			mockId2,
 			"",
 			"Doe",
-			3,
 			shared.ErrInvalidArguments,
 			nil,
 		},
 		{
 			"Invalid Worker - Empty Last Name",
-			3,
+			mockId2,
+			mockId2,
 			"John",
 			"",
-			4,
 			shared.ErrInvalidArguments,
 			nil,
 		},
 		{
 			"Invalid Worker - Negative Schedule ID",
-			4,
+			mockId2,
+			shared.NilIdentity,
 			"Jane",
 			"Doe",
-			-1,
 			shared.ErrInvalidArguments,
 			nil,
 		},
@@ -66,7 +66,7 @@ func TestShouldCreateNewWorker(t *testing.T) {
 
 	for _, testcase := range testcases {
 		t.Run(testcase.name, func(t *testing.T) {
-			worker, err := NewWorker(testcase.id, testcase.firstName, testcase.lastName, testcase.scheduleID)
+			worker, err := NewWorker(testcase.id, testcase.scheduleId, testcase.firstName, testcase.lastName)
 
 			assert.Equal(t, testcase.expectedWorker, worker)
 			assert.ErrorIs(t, err, testcase.expectedError)
@@ -83,26 +83,26 @@ func TestShouldIndicateWorkerEquality(t *testing.T) {
 	}{
 		{
 			"Equal Workers",
-			&Worker{1, "John", "Doe", 1},
-			&Worker{1, "John", "Doe", 1},
+			&Worker{mockId1, mockId1, "John", "Doe"},
+			&Worker{mockId1, mockId1, "John", "Doe"},
 			true,
 		},
 		{
 			"Different IDs",
-			&Worker{1, "John", "Doe", 1},
-			&Worker{2, "Jane", "Doe", 2},
+			&Worker{mockId1, mockId1, "John", "Doe"},
+			&Worker{mockId2, mockId2, "Jane", "Doe"},
 			false,
 		},
 		{
 			"Different IDs, same data",
-			&Worker{1, "John", "Doe", 1},
-			&Worker{2, "John", "Doe", 1},
+			&Worker{mockId1, mockId1, "John", "Doe"},
+			&Worker{mockId2, mockId1, "John", "Doe"},
 			false,
 		},
 		{
 			"Nil Worker",
 			nil,
-			&Worker{1, "John", "Doe", 1},
+			&Worker{mockId1, mockId1, "John", "Doe"},
 			false,
 		},
 		{

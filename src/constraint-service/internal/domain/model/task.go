@@ -5,14 +5,14 @@ import (
 )
 
 type Task struct {
-	id          int
+	id          shared.Identity
+	scheduleId  shared.Identity
 	name        string
 	description string
-	scheduleId  int
 }
 
-func NewTask(id, scheduleId int, name, description string) (*Task, error) {
-	if id < 0 || scheduleId < 0 || name == "" || description == "" {
+func NewTask(id, scheduleId shared.Identity, name, description string) (*Task, error) {
+	if id == shared.NilIdentity || scheduleId == shared.NilIdentity || name == "" || description == "" {
 		return nil, shared.ErrInvalidArguments
 	}
 
