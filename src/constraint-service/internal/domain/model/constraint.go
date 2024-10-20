@@ -12,16 +12,16 @@ const (
 )
 
 type Constraint struct {
-	scheduleId     int
-	workerId       int
-	taskId         int
-	locationId     int
+	scheduleId     shared.Identity
+	workerId       shared.Identity
+	taskId         shared.Identity
+	locationId     shared.Identity
 	startTime      int
 	endTime        int
 	constraintType ConstraintType
 }
 
-func newConstraint(scheduleId, workerId, taskId, locationId, startTime, endTime int, constraintType ConstraintType) Constraint {
+func newConstraint(scheduleId, workerId, taskId, locationId shared.Identity, startTime, endTime int, constraintType ConstraintType) Constraint {
 	return Constraint{
 		scheduleId:     scheduleId,
 		workerId:       workerId,
@@ -33,47 +33,55 @@ func newConstraint(scheduleId, workerId, taskId, locationId, startTime, endTime 
 	}
 }
 
-func NewTaskWorkerConstraint(scheduleId, workerId, taskId int, constraintType ConstraintType) (Constraint, error) {
-	if scheduleId < 0 || workerId < 0 || taskId < 0 {
+func NewTaskWorkerConstraint(scheduleId, workerId, taskId shared.Identity, constraintType ConstraintType) (Constraint, error) {
+	if scheduleId == shared.NilIdentity || workerId == shared.NilIdentity || taskId == shared.NilIdentity {
 		return Constraint{}, shared.ErrNegativeId
 	}
-
-	return newConstraint(scheduleId, workerId, taskId, -1, -1, -1, constraintType), nil
+	return newConstraint(scheduleId, workerId, taskId, shared.NilIdentity, -1, -1, constraintType), nil
 }
 
-func NewLocationTaskConstraint(scheduleId, locationId, taskId int, constraintType ConstraintType) (Constraint, error) {
-	if scheduleId < 0 || locationId < 0 || taskId < 0 {
+func NewLocationTaskConstraint(scheduleId, locationId, taskId shared.Identity, constraintType ConstraintType) (Constraint, error) {
+	if scheduleId == shared.NilIdentity || locationId == shared.NilIdentity || taskId == shared.NilIdentity {
 		return Constraint{}, shared.ErrNegativeId
 	}
-	return newConstraint(scheduleId, -1, taskId, locationId, -1, -1, constraintType), nil
+	return newConstraint(scheduleId, shared.NilIdentity, taskId, locationId, -1, -1, constraintType), nil
 }
 
-func NewLocationWorkerConstraint(scheduleId, locationId, workerId int, constraintType ConstraintType) (Constraint, error) {
-	if scheduleId < 0 || locationId < 0 || workerId < 0 {
+func NewLocationWorkerConstraint(scheduleId, locationId, workerId shared.Identity, constraintType ConstraintType) (Constraint, error) {
+	if scheduleId == shared.NilIdentity || locationId == shared.NilIdentity || workerId == shared.NilIdentity {
 		return Constraint{}, shared.ErrNegativeId
 	}
-	return newConstraint(scheduleId, workerId, -1, locationId, -1, -1, constraintType), nil
+	return newConstraint(scheduleId, workerId, shared.NilIdentity, locationId, -1, -1, constraintType), nil
 }
 
-func NewLocationTimeConstraint(scheduleId, locationId, startTime, endTime int, constraintType ConstraintType) (Constraint, error) {
-	if scheduleId < 0 || locationId < 0 || startTime >= endTime {
+func NewLocationTimeConstraint(scheduleId, locationId shared.Identity, startTime, endTime int, constraintType ConstraintType) (Constraint, error) {
+	if scheduleId == shared.NilIdentity || locationId == shared.NilIdentity {
+		return Constraint{}, shared.ErrNegativeId
+	}
+	if startTime >= endTime || startTime < 0 || endTime < 0 {
 		return Constraint{}, shared.ErrInvalidArguments
 	}
-
-	return newConstraint(scheduleId, -1, -1, locationId, startTime, endTime, constraintType), nil
-}
-func NewWorkerTimeConstraint(scheduleId, workerId, startTime, endTime int, constraintType ConstraintType) (Constraint, error) {
-	if scheduleId < 0 || workerId < 0 || startTime >= endTime {
-		return Constraint{}, shared.ErrInvalidArguments
-	}
-	return newConstraint(scheduleId, workerId, -1, -1, startTime, endTime, constraintType), nil
+	return newConstraint(scheduleId, shared.NilIdentity, shared.NilIdentity, locationId, startTime, endTime, constraintType), nil
 }
 
-func NewTaskTimeConstraint(scheduleId, taskId, startTime, endTime int, constraintType ConstraintType) (Constraint, error) {
-	if scheduleId < 0 || taskId < 0 || startTime >= endTime {
+func NewWorkerTimeConstraint(scheduleId, workerId shared.Identity, startTime, endTime int, constraintType ConstraintType) (Constraint, error) {
+	if scheduleId == shared.NilIdentity || workerId == shared.NilIdentity {
+		return Constraint{}, shared.ErrNegativeId
+	}
+	if startTime >= endTime || startTime < 0 || endTime < 0 {
 		return Constraint{}, shared.ErrInvalidArguments
 	}
-	return newConstraint(scheduleId, -1, taskId, -1, startTime, endTime, constraintType), nil
+	return newConstraint(scheduleId, workerId, shared.NilIdentity, shared.NilIdentity, startTime, endTime, constraintType), nil
+}
+
+func NewTaskTimeConstraint(scheduleId, taskId shared.Identity, startTime, endTime int, constraintType ConstraintType) (Constraint, error) {
+	if scheduleId == shared.NilIdentity || taskId == shared.NilIdentity {
+		return Constraint{}, shared.ErrNegativeId
+	}
+	if startTime >= endTime || startTime < 0 || endTime < 0 {
+		return Constraint{}, shared.ErrInvalidArguments
+	}
+	return newConstraint(scheduleId, shared.NilIdentity, taskId, shared.NilIdentity, startTime, endTime, constraintType), nil
 }
 
 func (c Constraint) ConflictsWith(other Constraint) bool {
@@ -85,19 +93,19 @@ func (c Constraint) ConflictsWith(other Constraint) bool {
 		return false
 	}
 
-	if c.workerId != -1 && c.workerId == other.workerId && c.taskId != -1 && c.taskId == other.taskId {
+	if c.workerId != shared.NilIdentity && c.workerId == other.workerId && c.taskId != shared.NilIdentity && c.taskId == other.taskId {
 		return true
 	}
 
-	if c.locationId != -1 && c.locationId == other.workerId && c.taskId != -1 && c.taskId == other.taskId {
+	if c.locationId != shared.NilIdentity && c.locationId == other.workerId && c.taskId != shared.NilIdentity && c.taskId == other.taskId {
 		return true
 	}
 
-	if c.workerId != -1 && c.workerId == other.workerId && c.locationId != -1 && c.locationId == other.locationId {
+	if c.workerId != shared.NilIdentity && c.workerId == other.workerId && c.locationId != shared.NilIdentity && c.locationId == other.locationId {
 		return true
 	}
 
-	if (c.locationId != -1 && c.locationId == other.locationId || c.taskId != -1 && c.taskId == other.taskId || c.workerId != -1 && c.workerId == other.workerId) &&
+	if (c.locationId != shared.NilIdentity && c.locationId == other.locationId || c.taskId != shared.NilIdentity && c.taskId == other.taskId || c.workerId != shared.NilIdentity && c.workerId == other.workerId) &&
 		c.startTime != -1 && other.startTime != -1 && c.startTime <= other.endTime && c.endTime >= other.startTime {
 		return true
 	}
