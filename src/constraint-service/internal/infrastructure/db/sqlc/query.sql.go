@@ -15,7 +15,7 @@ const getAllConstraintsForLocation = `-- name: GetAllConstraintsForLocation :man
 SELECT schedule_id, location_id, task_id, worker_id, start_slot, end_slot, kind from constraints WHERE location_id = $1
 `
 
-func (q *Queries) GetAllConstraintsForLocation(ctx context.Context, locationID pgtype.Int4) ([]Constraint, error) {
+func (q *Queries) GetAllConstraintsForLocation(ctx context.Context, locationID pgtype.UUID) ([]Constraint, error) {
 	rows, err := q.db.Query(ctx, getAllConstraintsForLocation, locationID)
 	if err != nil {
 		return nil, err
@@ -47,7 +47,7 @@ const getAllConstraintsForTask = `-- name: GetAllConstraintsForTask :many
 SELECT schedule_id, location_id, task_id, worker_id, start_slot, end_slot, kind from constraints WHERE task_id = $1
 `
 
-func (q *Queries) GetAllConstraintsForTask(ctx context.Context, taskID pgtype.Int4) ([]Constraint, error) {
+func (q *Queries) GetAllConstraintsForTask(ctx context.Context, taskID pgtype.UUID) ([]Constraint, error) {
 	rows, err := q.db.Query(ctx, getAllConstraintsForTask, taskID)
 	if err != nil {
 		return nil, err
@@ -79,7 +79,7 @@ const getAllConstraintsForWorker = `-- name: GetAllConstraintsForWorker :many
 SELECT schedule_id, location_id, task_id, worker_id, start_slot, end_slot, kind from constraints WHERE worker_id = $1
 `
 
-func (q *Queries) GetAllConstraintsForWorker(ctx context.Context, workerID pgtype.Int4) ([]Constraint, error) {
+func (q *Queries) GetAllConstraintsForWorker(ctx context.Context, workerID pgtype.UUID) ([]Constraint, error) {
 	rows, err := q.db.Query(ctx, getAllConstraintsForWorker, workerID)
 	if err != nil {
 		return nil, err
@@ -218,9 +218,9 @@ SELECT schedule_id, location_id, task_id, worker_id, start_slot, end_slot, kind 
 `
 
 type GetConstraintParams struct {
-	LocationID pgtype.Int4
-	TaskID     pgtype.Int4
-	WorkerID   pgtype.Int4
+	LocationID pgtype.UUID
+	TaskID     pgtype.UUID
+	WorkerID   pgtype.UUID
 	StartSlot  pgtype.Int4
 	EndSlot    pgtype.Int4
 	Kind       ConstraintType
@@ -252,7 +252,7 @@ const getLocation = `-- name: GetLocation :one
 SELECT id, title, story, schedule_id from locations WHERE id = $1
 `
 
-func (q *Queries) GetLocation(ctx context.Context, id int32) (Location, error) {
+func (q *Queries) GetLocation(ctx context.Context, id pgtype.UUID) (Location, error) {
 	row := q.db.QueryRow(ctx, getLocation, id)
 	var i Location
 	err := row.Scan(
@@ -268,7 +268,7 @@ const getSchedule = `-- name: GetSchedule :one
 SELECT id, title from schedules WHERE id = $1
 `
 
-func (q *Queries) GetSchedule(ctx context.Context, id int32) (Schedule, error) {
+func (q *Queries) GetSchedule(ctx context.Context, id pgtype.UUID) (Schedule, error) {
 	row := q.db.QueryRow(ctx, getSchedule, id)
 	var i Schedule
 	err := row.Scan(&i.ID, &i.Title)
@@ -279,7 +279,7 @@ const getTask = `-- name: GetTask :one
 SELECT id, title, story, schedule_id from tasks WHERE id = $1
 `
 
-func (q *Queries) GetTask(ctx context.Context, id int32) (Task, error) {
+func (q *Queries) GetTask(ctx context.Context, id pgtype.UUID) (Task, error) {
 	row := q.db.QueryRow(ctx, getTask, id)
 	var i Task
 	err := row.Scan(
@@ -295,7 +295,7 @@ const getWorker = `-- name: GetWorker :one
 SELECT id, title, schedule_id from workers WHERE id = $1
 `
 
-func (q *Queries) GetWorker(ctx context.Context, id int32) (Worker, error) {
+func (q *Queries) GetWorker(ctx context.Context, id pgtype.UUID) (Worker, error) {
 	row := q.db.QueryRow(ctx, getWorker, id)
 	var i Worker
 	err := row.Scan(&i.ID, &i.Title, &i.ScheduleID)
