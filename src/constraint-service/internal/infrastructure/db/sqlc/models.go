@@ -14,8 +14,8 @@ import (
 type ConstraintType string
 
 const (
-	ConstraintTypeMust ConstraintType = "must"
-	ConstraintTypeCant ConstraintType = "cant"
+	ConstraintTypeMust   ConstraintType = "must"
+	ConstraintTypeCannot ConstraintType = "cannot"
 )
 
 func (e *ConstraintType) Scan(src interface{}) error {
@@ -54,36 +54,36 @@ func (ns NullConstraintType) Value() (driver.Value, error) {
 }
 
 type Constraint struct {
-	ScheduleID pgtype.Int4
-	LocationID pgtype.Int4
-	TaskID     pgtype.Int4
-	WorkerID   pgtype.Int4
+	ScheduleID pgtype.UUID
+	LocationID pgtype.UUID
+	TaskID     pgtype.UUID
+	WorkerID   pgtype.UUID
 	StartSlot  pgtype.Int4
 	EndSlot    pgtype.Int4
 	Kind       ConstraintType
 }
 
 type Location struct {
-	ID         int32
+	ID         pgtype.UUID
 	Title      string
 	Story      string
-	ScheduleID int32
+	ScheduleID pgtype.UUID
 }
 
 type Schedule struct {
-	ID    int32
+	ID    pgtype.UUID
 	Title string
 }
 
 type Task struct {
-	ID         int32
+	ID         pgtype.UUID
 	Title      string
 	Story      string
-	ScheduleID int32
+	ScheduleID pgtype.UUID
 }
 
 type Worker struct {
-	ID         int32
+	ID         pgtype.UUID
 	Title      string
-	ScheduleID int32
+	ScheduleID pgtype.UUID
 }
