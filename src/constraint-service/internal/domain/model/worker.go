@@ -24,6 +24,22 @@ func NewWorker(id shared.Identity, scheduleId shared.Identity, firstName, lastNa
 	}, nil
 }
 
+func (w *Worker) Id() shared.Identity {
+	return w.id
+}
+
+func (w *Worker) ScheudleId() shared.Identity {
+	return w.scheduleId
+}
+
+func (w *Worker) FirstName() string {
+	return w.firstName
+}
+
+func (w *Worker) LastName() string {
+	return w.lastName
+}
+
 func (w *Worker) Equals(other *Worker) bool {
 	if w == nil || other == nil {
 		return false

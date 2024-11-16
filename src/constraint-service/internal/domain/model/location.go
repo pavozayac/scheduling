@@ -11,6 +11,22 @@ type Location struct {
 	description string
 }
 
+func (l Location) Id() shared.Identity {
+	return l.id
+}
+
+func (l Location) ScheduleId() shared.Identity {
+	return l.scheduleId
+}
+
+func (l Location) Name() string {
+	return l.name
+}
+
+func (l Location) Description() string {
+	return l.description
+}
+
 func NewLocation(id, scheduleId shared.Identity, name string, description string) (*Location, error) {
 	if id == shared.NilIdentity || name == "" || description == "" || scheduleId == shared.NilIdentity {
 		return nil, shared.ErrInvalidArguments
