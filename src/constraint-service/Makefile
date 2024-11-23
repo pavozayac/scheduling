@@ -38,7 +38,7 @@ audit: test
 ## test: run all tests
 .PHONY: test
 test:
-	go test -v -race -buildvcs ./...
+	CGO_ENABLED=1 go test -v -race -buildvcs ./...
 
 ## test/cover: run all tests and display coverage
 .PHONY: test/cover
@@ -66,7 +66,6 @@ tidy:
 ## build: build the application
 .PHONY: build
 build:
-	# Include additional build steps, like TypeScript, SCSS or Tailwind compilation here...
 	go build -o=/tmp/bin/${binary_name} ${main_package_path}
 
 ## run: run the  application
