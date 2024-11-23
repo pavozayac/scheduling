@@ -12,6 +12,14 @@ func (i Identity) Value() (driver.Value, error) {
 	return uuid.UUID(i).Value()
 }
 
+func (i Identity) Bytes() ([]byte, error) {
+	return uuid.UUID(i).MarshalBinary()
+}
+
+func (i *Identity) Scan(src interface{}) error {
+	return (*uuid.UUID)(i).Scan(src)
+}
+
 var NilIdentity = Identity(uuid.Nil)
 
 type IdentityGenerator interface {
