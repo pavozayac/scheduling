@@ -6,20 +6,21 @@ CREATE TABLE schedules (
 );
 
 CREATE TABLE workers (
-    id uuid PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    title varchar(200) NOT NULL,
+    id uuid PRIMARY KEY,
+    first_name varchar(200) NOT NULL,
+    last_name varchar(200) NOT NULL,
     schedule_id uuid REFERENCES schedules(id) NOT NULL
 );
 
 CREATE TABLE tasks (
-    id uuid PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    id uuid PRIMARY KEY,
     title varchar(200) NOT NULL,
     story varchar(1000) NOT NULL,
     schedule_id uuid REFERENCES schedules(id) NOT NULL
 );
 
 CREATE TABLE locations (
-    id uuid PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    id uuid PRIMARY KEY,
     title varchar(200) NOT NULL,
     story varchar(1000) NOT NULL,
     schedule_id uuid REFERENCES schedules(id) NOT NULL

@@ -33,3 +33,42 @@ SELECT * from constraints WHERE location_id = $1;
 
 -- name: GetAllConstraintsForWorker :many
 SELECT * from constraints WHERE worker_id = $1;
+
+-- name: InsertSchedule :exec
+INSERT INTO schedules (id, title) VALUES ($1, $2);
+
+-- name: InsertConstraint :exec
+INSERT INTO constraints (schedule_id, location_id, task_id, worker_id, start_slot, end_slot, kind) VALUES ($1, $2, $3, $4, $5, $6, $7);
+
+-- name: InsertConstraints :copyfrom
+INSERT INTO constraints (schedule_id, location_id, task_id, worker_id, start_slot, end_slot, kind) VALUES ($1, $2, $3, $4, $5, $6, $7);
+
+-- name: InsertWorker :exec
+INSERT INTO workers (id, first_name, last_name, schedule_id) VALUES ($1, $2, $3, $4);
+
+-- name: InsertTask :exec
+INSERT INTO tasks (id, title, story, schedule_id) VALUES ($1, $2, $3, $4);
+
+-- name: InsertLocation :exec
+INSERT INTO locations (id, title, story, schedule_id) VALUES ($1, $2, $3, $4);
+
+-- name: UpsertWorker :exec
+INSERT INTO workers (id, first_name, last_name, schedule_id) VALUES ($1, $2, $3, $4)
+ON CONFLICT (id) DO UPDATE SET first_name = $2, last_name = $3, schedule_id = $4;
+
+-- name: UpsertTask :exec
+INSERT INTO tasks (id, title, story, schedule_id) VALUES ($1, $2, $3, $4)
+ON CONFLICT (id) DO UPDATE SET title = $2, story = $3, schedule_id = $4;
+
+-- name: UpsertLocation :exec
+INSERT INTO locations (id, title, story, schedule_id) VALUES ($1, $2, $3, $4)
+ON CONFLICT (id) DO UPDATE SET title = $2, story = $3, schedule_id = $4;
+
+-- name: DeleteWorker :exec
+DELETE FROM workers WHERE id = $1;
+
+-- name: DeleteTask :exec
+DELETE FROM tasks WHERE id = $1;
+
+-- name: DeleteLocation :exec
+DELETE FROM locations WHERE id = $1;
