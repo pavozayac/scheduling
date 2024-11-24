@@ -22,11 +22,13 @@ func (r PsqlTaskRepo) Db() pgx.Conn {
 
 func (r *PsqlTaskRepo) SaveOrUpdateTask(ctx context.Context, task model.Task) error {
 	return ishared.TransactionDecorator(ctx, r, func(q *sqlc.Queries, ctx context.Context) error {
+		taskID := uuid.UUID(task.Id())
+		scheduleID := uuid.UUID(task.ScheduleId())
 		return q.UpsertTask(ctx, sqlc.UpsertTaskParams{
-			ID:         uuid.UUID(task.Id()),
+			ID:         &taskID,
 			Title:      task.Name(),
 			Story:      task.Description(),
-			ScheduleID: uuid.UUID(task.ScheduleId()),
+			ScheduleID: &scheduleID,
 		})
 	})
 }
@@ -41,14 +43,15 @@ func (r *PsqlTaskRepo) GetTask(ctx context.Context, id shared.Identity) (*model.
 
 	queries := sqlc.New(tx)
 
-	dbTask, err := queries.GetTask(ctx, uuid.UUID(id))
+	taskID := uuid.UUID(id)
+	dbTask, err := queries.GetTask(ctx, &taskID)
 	if err != nil {
 		return nil, err
 	}
 
 	return model.NewTask(
-		shared.Identity(dbTask.ID),
-		shared.Identity(dbTask.ScheduleID),
+		shared.Identity(*dbTask.ID),
+		shared.Identity(*dbTask.ScheduleID),
 		dbTask.Title,
 		dbTask.Story,
 	)
@@ -56,6 +59,7 @@ func (r *PsqlTaskRepo) GetTask(ctx context.Context, id shared.Identity) (*model.
 
 func (r *PsqlTaskRepo) DeleteTask(ctx context.Context, id shared.Identity) error {
 	return ishared.TransactionDecorator(ctx, r, func(q *sqlc.Queries, ctx context.Context) error {
-		return q.DeleteTask(ctx, uuid.UUID(id))
+		taskID := uuid.UUID(id)
+		return q.DeleteTask(ctx, &taskID)
 	})
 }

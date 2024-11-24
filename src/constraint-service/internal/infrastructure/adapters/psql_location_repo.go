@@ -22,11 +22,14 @@ func (r PsqlLocationRepo) Db() pgx.Conn {
 
 func (r *PsqlLocationRepo) SaveOrUpdateLocation(ctx context.Context, location model.Location) error {
 	return ishared.TransactionDecorator(ctx, r, func(q *sqlc.Queries, ctx context.Context) error {
+		id := uuid.UUID(location.Id())
+		scheduleId := uuid.UUID(location.ScheduleId())
+
 		return q.UpsertLocation(ctx, sqlc.UpsertLocationParams{
-			ID:         uuid.UUID(location.Id()),
+			ID:         &id,
 			Title:      location.Name(),
 			Story:      location.Description(),
-			ScheduleID: uuid.UUID(location.ScheduleId()),
+			ScheduleID: &scheduleId,
 		})
 	})
 }
@@ -41,15 +44,16 @@ func (r *PsqlLocationRepo) GetLocation(ctx context.Context, id shared.Identity) 
 
 	queries := sqlc.New(tx)
 
-	dbLocation, err := queries.GetLocation(ctx, uuid.UUID(id))
+	locationId := uuid.UUID(id)
+	dbLocation, err := queries.GetLocation(ctx, &locationId)
 
 	if err != nil {
 		return nil, err
 	}
 
 	return model.NewLocation(
-		shared.Identity(dbLocation.ID),
-		shared.Identity(dbLocation.ScheduleID),
+		shared.Identity(*dbLocation.ID),
+		shared.Identity(*dbLocation.ScheduleID),
 		dbLocation.Title,
 		dbLocation.Story,
 	)
@@ -57,6 +61,7 @@ func (r *PsqlLocationRepo) GetLocation(ctx context.Context, id shared.Identity) 
 
 func (r *PsqlLocationRepo) DeleteLocation(ctx context.Context, id shared.Identity) error {
 	return ishared.TransactionDecorator(ctx, r, func(q *sqlc.Queries, ctx context.Context) error {
-		return q.DeleteLocation(ctx, uuid.UUID(id))
+		locationId := uuid.UUID(id)
+		return q.DeleteLocation(ctx, &locationId)
 	})
 }

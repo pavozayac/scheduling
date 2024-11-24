@@ -21,11 +21,13 @@ func (r PsqlWorkerRepo) Db() pgx.Conn {
 
 func (r *PsqlWorkerRepo) SaveOrUpdateWorker(ctx context.Context, worker model.Worker) error {
 	return ishared.TransactionDecorator(ctx, r, func(q *sqlc.Queries, ctx context.Context) error {
+		id := uuid.UUID(worker.Id())
+		scheduleID := uuid.UUID(worker.ScheduleId())
 		return q.UpsertWorker(ctx, sqlc.UpsertWorkerParams{
-			ID:         uuid.UUID(worker.Id()),
+			ID:         &id,
 			FirstName:  worker.FirstName(),
 			LastName:   worker.LastName(),
-			ScheduleID: uuid.UUID(worker.ScheduleId()),
+			ScheduleID: &scheduleID,
 		})
 	})
 }
@@ -40,15 +42,16 @@ func (r *PsqlWorkerRepo) GetWorker(ctx context.Context, id shared.Identity) (*mo
 
 	queries := sqlc.New(tx)
 
-	dbWorker, err := queries.GetWorker(ctx, uuid.UUID(id))
+	uuidID := uuid.UUID(id)
+	dbWorker, err := queries.GetWorker(ctx, &uuidID)
 
 	if err != nil {
 		return nil, err
 	}
 
 	return model.NewWorker(
-		shared.Identity(dbWorker.ID),
-		shared.Identity(dbWorker.ScheduleID),
+		shared.Identity(*dbWorker.ID),
+		shared.Identity(*dbWorker.ScheduleID),
 		dbWorker.FirstName,
 		dbWorker.LastName,
 	)
@@ -56,6 +59,7 @@ func (r *PsqlWorkerRepo) GetWorker(ctx context.Context, id shared.Identity) (*mo
 
 func (r *PsqlWorkerRepo) DeleteWorker(ctx context.Context, id shared.Identity) error {
 	return ishared.TransactionDecorator(ctx, r, func(q *sqlc.Queries, ctx context.Context) error {
-		return q.DeleteWorker(ctx, uuid.UUID(id))
+		uuidID := uuid.UUID(id)
+		return q.DeleteWorker(ctx, &uuidID)
 	})
 }
