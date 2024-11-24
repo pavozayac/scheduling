@@ -10,4 +10,22 @@ sql:
         sql_package: "pgx/v5"
         overrides:
           - db_type: "uuid"
-            go_type: "github.com/google/uuid.UUID"
+            go_type:
+              import: "github.com/google/uuid"
+              type: "UUID"
+          - column: "*.schedule_id"
+            go_type:
+              import: "github.com/google/uuid"
+              type: "UUID"
+          - column: "*.task_id"
+            go_type:
+              import: "github.com/google/uuid"
+              type: "UUID"
+          - column: "*.worker_id"
+            go_type:
+              import: "github.com/google/uuid"
+              type: "UUID"
+          - column: "*.location_id"
+            go_type:
+              import: "github.com/google/uuid"
+              type: "UUID"

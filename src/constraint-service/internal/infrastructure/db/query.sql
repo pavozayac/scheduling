@@ -34,14 +34,25 @@ SELECT * from constraints WHERE location_id = $1;
 -- name: GetAllConstraintsForWorker :many
 SELECT * from constraints WHERE worker_id = $1;
 
--- name: InsertSchedule :exec
-INSERT INTO schedules (id, title) VALUES ($1, $2);
+-- name: GetAllConstraintsForSchedule :many
+SELECT * from constraints WHERE schedule_id = $1;
 
 -- name: InsertConstraint :exec
 INSERT INTO constraints (schedule_id, location_id, task_id, worker_id, start_slot, end_slot, kind) VALUES ($1, $2, $3, $4, $5, $6, $7);
 
 -- name: InsertConstraints :copyfrom
 INSERT INTO constraints (schedule_id, location_id, task_id, worker_id, start_slot, end_slot, kind) VALUES ($1, $2, $3, $4, $5, $6, $7);
+
+-- name: UpsertSchedule :exec
+INSERT INTO schedules (id, title) VALUES ($1, $2) 
+ON CONFLICT (id) DO UPDATE SET title = $2;
+
+-- name: DeleteScheduleConstraints :exec 
+DELETE FROM constraints WHERE schedule_id = $1;
+
+-- name: DeleteSchedule :exec
+DELETE FROM schedules WHERE id = $1;
+
 
 -- name: InsertWorker :exec
 INSERT INTO workers (id, first_name, last_name, schedule_id) VALUES ($1, $2, $3, $4);

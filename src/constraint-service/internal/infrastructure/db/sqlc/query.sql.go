@@ -21,6 +21,24 @@ func (q *Queries) DeleteLocation(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
+const deleteSchedule = `-- name: DeleteSchedule :exec
+DELETE FROM schedules WHERE id = $1
+`
+
+func (q *Queries) DeleteSchedule(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteSchedule, id)
+	return err
+}
+
+const deleteScheduleConstraints = `-- name: DeleteScheduleConstraints :exec
+DELETE FROM constraints WHERE schedule_id = $1
+`
+
+func (q *Queries) DeleteScheduleConstraints(ctx context.Context, scheduleID uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteScheduleConstraints, scheduleID)
+	return err
+}
+
 const deleteTask = `-- name: DeleteTask :exec
 DELETE FROM tasks WHERE id = $1
 `
@@ -43,8 +61,40 @@ const getAllConstraintsForLocation = `-- name: GetAllConstraintsForLocation :man
 SELECT schedule_id, location_id, task_id, worker_id, start_slot, end_slot, kind from constraints WHERE location_id = $1
 `
 
-func (q *Queries) GetAllConstraintsForLocation(ctx context.Context, locationID pgtype.UUID) ([]Constraint, error) {
+func (q *Queries) GetAllConstraintsForLocation(ctx context.Context, locationID uuid.UUID) ([]Constraint, error) {
 	rows, err := q.db.Query(ctx, getAllConstraintsForLocation, locationID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Constraint
+	for rows.Next() {
+		var i Constraint
+		if err := rows.Scan(
+			&i.ScheduleID,
+			&i.LocationID,
+			&i.TaskID,
+			&i.WorkerID,
+			&i.StartSlot,
+			&i.EndSlot,
+			&i.Kind,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAllConstraintsForSchedule = `-- name: GetAllConstraintsForSchedule :many
+SELECT schedule_id, location_id, task_id, worker_id, start_slot, end_slot, kind from constraints WHERE schedule_id = $1
+`
+
+func (q *Queries) GetAllConstraintsForSchedule(ctx context.Context, scheduleID uuid.UUID) ([]Constraint, error) {
+	rows, err := q.db.Query(ctx, getAllConstraintsForSchedule, scheduleID)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +125,7 @@ const getAllConstraintsForTask = `-- name: GetAllConstraintsForTask :many
 SELECT schedule_id, location_id, task_id, worker_id, start_slot, end_slot, kind from constraints WHERE task_id = $1
 `
 
-func (q *Queries) GetAllConstraintsForTask(ctx context.Context, taskID pgtype.UUID) ([]Constraint, error) {
+func (q *Queries) GetAllConstraintsForTask(ctx context.Context, taskID uuid.UUID) ([]Constraint, error) {
 	rows, err := q.db.Query(ctx, getAllConstraintsForTask, taskID)
 	if err != nil {
 		return nil, err
@@ -107,7 +157,7 @@ const getAllConstraintsForWorker = `-- name: GetAllConstraintsForWorker :many
 SELECT schedule_id, location_id, task_id, worker_id, start_slot, end_slot, kind from constraints WHERE worker_id = $1
 `
 
-func (q *Queries) GetAllConstraintsForWorker(ctx context.Context, workerID pgtype.UUID) ([]Constraint, error) {
+func (q *Queries) GetAllConstraintsForWorker(ctx context.Context, workerID uuid.UUID) ([]Constraint, error) {
 	rows, err := q.db.Query(ctx, getAllConstraintsForWorker, workerID)
 	if err != nil {
 		return nil, err
@@ -251,9 +301,9 @@ SELECT schedule_id, location_id, task_id, worker_id, start_slot, end_slot, kind 
 `
 
 type GetConstraintParams struct {
-	LocationID pgtype.UUID
-	TaskID     pgtype.UUID
-	WorkerID   pgtype.UUID
+	LocationID uuid.UUID
+	TaskID     uuid.UUID
+	WorkerID   uuid.UUID
 	StartSlot  pgtype.Int4
 	EndSlot    pgtype.Int4
 	Kind       ConstraintType
@@ -345,10 +395,10 @@ INSERT INTO constraints (schedule_id, location_id, task_id, worker_id, start_slo
 `
 
 type InsertConstraintParams struct {
-	ScheduleID pgtype.UUID
-	LocationID pgtype.UUID
-	TaskID     pgtype.UUID
-	WorkerID   pgtype.UUID
+	ScheduleID uuid.UUID
+	LocationID uuid.UUID
+	TaskID     uuid.UUID
+	WorkerID   uuid.UUID
 	StartSlot  pgtype.Int4
 	EndSlot    pgtype.Int4
 	Kind       ConstraintType
@@ -368,10 +418,10 @@ func (q *Queries) InsertConstraint(ctx context.Context, arg InsertConstraintPara
 }
 
 type InsertConstraintsParams struct {
-	ScheduleID pgtype.UUID
-	LocationID pgtype.UUID
-	TaskID     pgtype.UUID
-	WorkerID   pgtype.UUID
+	ScheduleID uuid.UUID
+	LocationID uuid.UUID
+	TaskID     uuid.UUID
+	WorkerID   uuid.UUID
 	StartSlot  pgtype.Int4
 	EndSlot    pgtype.Int4
 	Kind       ConstraintType
@@ -395,20 +445,6 @@ func (q *Queries) InsertLocation(ctx context.Context, arg InsertLocationParams) 
 		arg.Story,
 		arg.ScheduleID,
 	)
-	return err
-}
-
-const insertSchedule = `-- name: InsertSchedule :exec
-INSERT INTO schedules (id, title) VALUES ($1, $2)
-`
-
-type InsertScheduleParams struct {
-	ID    uuid.UUID
-	Title string
-}
-
-func (q *Queries) InsertSchedule(ctx context.Context, arg InsertScheduleParams) error {
-	_, err := q.db.Exec(ctx, insertSchedule, arg.ID, arg.Title)
 	return err
 }
 
@@ -473,6 +509,21 @@ func (q *Queries) UpsertLocation(ctx context.Context, arg UpsertLocationParams) 
 		arg.Story,
 		arg.ScheduleID,
 	)
+	return err
+}
+
+const upsertSchedule = `-- name: UpsertSchedule :exec
+INSERT INTO schedules (id, title) VALUES ($1, $2) 
+ON CONFLICT (id) DO UPDATE SET title = $2
+`
+
+type UpsertScheduleParams struct {
+	ID    uuid.UUID
+	Title string
+}
+
+func (q *Queries) UpsertSchedule(ctx context.Context, arg UpsertScheduleParams) error {
+	_, err := q.db.Exec(ctx, upsertSchedule, arg.ID, arg.Title)
 	return err
 }
 
