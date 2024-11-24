@@ -55,37 +55,37 @@ func (ns NullConstraintType) Value() (driver.Value, error) {
 }
 
 type Constraint struct {
-	ScheduleID uuid.UUID
-	LocationID uuid.UUID
-	TaskID     uuid.UUID
-	WorkerID   uuid.UUID
+	ScheduleID *uuid.UUID
+	LocationID *uuid.UUID
+	TaskID     *uuid.UUID
+	WorkerID   *uuid.UUID
 	StartSlot  pgtype.Int4
 	EndSlot    pgtype.Int4
 	Kind       ConstraintType
 }
 
 type Location struct {
-	ID         uuid.UUID
+	ID         *uuid.UUID
 	Title      string
 	Story      string
-	ScheduleID uuid.UUID
+	ScheduleID *uuid.UUID
 }
 
 type Schedule struct {
-	ID    uuid.UUID
+	ID    *uuid.UUID
 	Title string
 }
 
 type Task struct {
-	ID         uuid.UUID
+	ID         *uuid.UUID
 	Title      string
 	Story      string
-	ScheduleID uuid.UUID
+	ScheduleID *uuid.UUID
 }
 
 type Worker struct {
-	ID         uuid.UUID
+	ID         *uuid.UUID
 	FirstName  string
 	LastName   string
-	ScheduleID uuid.UUID
+	ScheduleID *uuid.UUID
 }
