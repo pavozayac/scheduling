@@ -7,6 +7,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gin-gonic/gin"
+	_ "github.com/jackc/pgx/v5"
 	"github.com/pavozayac/scheduling/src/constraint-service/internal/application/graph"
 )
 

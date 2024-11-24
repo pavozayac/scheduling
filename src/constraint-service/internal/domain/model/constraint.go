@@ -1,6 +1,8 @@
 package model
 
 import (
+	"fmt"
+
 	"github.com/pavozayac/scheduling/src/constraint-service/internal/domain/shared"
 )
 
@@ -21,6 +23,34 @@ type Constraint struct {
 	constraintType ConstraintType
 }
 
+func (c Constraint) ScheduleId() shared.Identity {
+	return c.scheduleId
+}
+
+func (c Constraint) WorkerId() shared.Identity {
+	return c.workerId
+}
+
+func (c Constraint) TaskId() shared.Identity {
+	return c.taskId
+}
+
+func (c Constraint) LocationId() shared.Identity {
+	return c.locationId
+}
+
+func (c Constraint) StartTime() int {
+	return c.startTime
+}
+
+func (c Constraint) EndTime() int {
+	return c.endTime
+}
+
+func (c Constraint) Type() ConstraintType {
+	return c.constraintType
+}
+
 func newConstraint(scheduleId, workerId, taskId, locationId shared.Identity, startTime, endTime int, constraintType ConstraintType) Constraint {
 	return Constraint{
 		scheduleId:     scheduleId,
@@ -33,55 +63,56 @@ func newConstraint(scheduleId, workerId, taskId, locationId shared.Identity, sta
 	}
 }
 
-func NewTaskWorkerConstraint(scheduleId, workerId, taskId shared.Identity, constraintType ConstraintType) (Constraint, error) {
-	if scheduleId == shared.NilIdentity || workerId == shared.NilIdentity || taskId == shared.NilIdentity {
-		return Constraint{}, shared.ErrNilIdentity
+func validateConstraintData(
+	scheduleId, workerId, taskId, locationId shared.Identity,
+	startTime, endTime int,
+	constraintType ConstraintType,
+) error {
+	if scheduleId == shared.NilIdentity {
+		return shared.ErrNilIdentity
 	}
-	return newConstraint(scheduleId, workerId, taskId, shared.NilIdentity, -1, -1, constraintType), nil
+
+	hasWorker := workerId != shared.NilIdentity
+	hasTask := taskId != shared.NilIdentity
+	hasLocation := locationId != shared.NilIdentity
+	hasTime := startTime != -1 && endTime != -1
+
+	// Validate time range if present
+	if hasTime {
+		if startTime >= endTime || startTime < 0 || endTime < 0 {
+			return shared.ErrInvalidArguments
+		}
+	}
+
+	if constraintType != Must && constraintType != Cannot {
+		return shared.ErrInvalidArguments
+	}
+
+	// Match valid patterns
+	switch {
+	case hasWorker && hasTask && !hasLocation && !hasTime: // TaskWorker
+		return nil
+	case hasLocation && hasTask && !hasWorker && !hasTime: // LocationTask
+		return nil
+	case hasLocation && hasWorker && !hasTask && !hasTime: // LocationWorker
+		return nil
+	case hasLocation && hasTime && !hasWorker && !hasTask: // LocationTime
+		return nil
+	case hasWorker && hasTime && !hasLocation && !hasTask: // WorkerTime
+		return nil
+	case hasTask && hasTime && !hasLocation && !hasWorker: // TaskTime
+		return nil
+	default:
+		return shared.ErrInvalidArguments
+	}
 }
 
-func NewLocationTaskConstraint(scheduleId, locationId, taskId shared.Identity, constraintType ConstraintType) (Constraint, error) {
-	if scheduleId == shared.NilIdentity || locationId == shared.NilIdentity || taskId == shared.NilIdentity {
-		return Constraint{}, shared.ErrNilIdentity
+func NewConstraint(scheduleId, workerId, taskId, locationId shared.Identity, startTime, endTime int, constraintType ConstraintType) (Constraint, error) {
+	if err := validateConstraintData(scheduleId, workerId, taskId, locationId, startTime, endTime, constraintType); err != nil {
+		return Constraint{}, fmt.Errorf("constraint validation failed: %w", err)
 	}
-	return newConstraint(scheduleId, shared.NilIdentity, taskId, locationId, -1, -1, constraintType), nil
-}
 
-func NewLocationWorkerConstraint(scheduleId, locationId, workerId shared.Identity, constraintType ConstraintType) (Constraint, error) {
-	if scheduleId == shared.NilIdentity || locationId == shared.NilIdentity || workerId == shared.NilIdentity {
-		return Constraint{}, shared.ErrNilIdentity
-	}
-	return newConstraint(scheduleId, workerId, shared.NilIdentity, locationId, -1, -1, constraintType), nil
-}
-
-func NewLocationTimeConstraint(scheduleId, locationId shared.Identity, startTime, endTime int, constraintType ConstraintType) (Constraint, error) {
-	if scheduleId == shared.NilIdentity || locationId == shared.NilIdentity {
-		return Constraint{}, shared.ErrNilIdentity
-	}
-	if startTime >= endTime || startTime < 0 || endTime < 0 {
-		return Constraint{}, shared.ErrInvalidArguments
-	}
-	return newConstraint(scheduleId, shared.NilIdentity, shared.NilIdentity, locationId, startTime, endTime, constraintType), nil
-}
-
-func NewWorkerTimeConstraint(scheduleId, workerId shared.Identity, startTime, endTime int, constraintType ConstraintType) (Constraint, error) {
-	if scheduleId == shared.NilIdentity || workerId == shared.NilIdentity {
-		return Constraint{}, shared.ErrNilIdentity
-	}
-	if startTime >= endTime || startTime < 0 || endTime < 0 {
-		return Constraint{}, shared.ErrInvalidArguments
-	}
-	return newConstraint(scheduleId, workerId, shared.NilIdentity, shared.NilIdentity, startTime, endTime, constraintType), nil
-}
-
-func NewTaskTimeConstraint(scheduleId, taskId shared.Identity, startTime, endTime int, constraintType ConstraintType) (Constraint, error) {
-	if scheduleId == shared.NilIdentity || taskId == shared.NilIdentity {
-		return Constraint{}, shared.ErrNilIdentity
-	}
-	if startTime >= endTime || startTime < 0 || endTime < 0 {
-		return Constraint{}, shared.ErrInvalidArguments
-	}
-	return newConstraint(scheduleId, shared.NilIdentity, taskId, shared.NilIdentity, startTime, endTime, constraintType), nil
+	return newConstraint(scheduleId, workerId, taskId, locationId, startTime, endTime, constraintType), nil
 }
 
 func (c Constraint) ConflictsWith(other Constraint) bool {

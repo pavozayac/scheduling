@@ -8,6 +8,7 @@ import (
 	"database/sql/driver"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -54,36 +55,37 @@ func (ns NullConstraintType) Value() (driver.Value, error) {
 }
 
 type Constraint struct {
-	ScheduleID pgtype.UUID
-	LocationID pgtype.UUID
-	TaskID     pgtype.UUID
-	WorkerID   pgtype.UUID
+	ScheduleID *uuid.UUID
+	LocationID *uuid.UUID
+	TaskID     *uuid.UUID
+	WorkerID   *uuid.UUID
 	StartSlot  pgtype.Int4
 	EndSlot    pgtype.Int4
 	Kind       ConstraintType
 }
 
 type Location struct {
-	ID         pgtype.UUID
+	ID         *uuid.UUID
 	Title      string
 	Story      string
-	ScheduleID pgtype.UUID
+	ScheduleID *uuid.UUID
 }
 
 type Schedule struct {
-	ID    pgtype.UUID
+	ID    *uuid.UUID
 	Title string
 }
 
 type Task struct {
-	ID         pgtype.UUID
+	ID         *uuid.UUID
 	Title      string
 	Story      string
-	ScheduleID pgtype.UUID
+	ScheduleID *uuid.UUID
 }
 
 type Worker struct {
-	ID         pgtype.UUID
-	Title      string
-	ScheduleID pgtype.UUID
+	ID         *uuid.UUID
+	FirstName  string
+	LastName   string
+	ScheduleID *uuid.UUID
 }

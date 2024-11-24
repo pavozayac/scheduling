@@ -8,15 +8,93 @@ package sqlc
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
+
+const deleteLocation = `-- name: DeleteLocation :exec
+DELETE FROM locations WHERE id = $1
+`
+
+func (q *Queries) DeleteLocation(ctx context.Context, id *uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteLocation, id)
+	return err
+}
+
+const deleteSchedule = `-- name: DeleteSchedule :exec
+DELETE FROM schedules WHERE id = $1
+`
+
+func (q *Queries) DeleteSchedule(ctx context.Context, id *uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteSchedule, id)
+	return err
+}
+
+const deleteScheduleConstraints = `-- name: DeleteScheduleConstraints :exec
+DELETE FROM constraints WHERE schedule_id = $1
+`
+
+func (q *Queries) DeleteScheduleConstraints(ctx context.Context, scheduleID *uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteScheduleConstraints, scheduleID)
+	return err
+}
+
+const deleteTask = `-- name: DeleteTask :exec
+DELETE FROM tasks WHERE id = $1
+`
+
+func (q *Queries) DeleteTask(ctx context.Context, id *uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteTask, id)
+	return err
+}
+
+const deleteWorker = `-- name: DeleteWorker :exec
+DELETE FROM workers WHERE id = $1
+`
+
+func (q *Queries) DeleteWorker(ctx context.Context, id *uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteWorker, id)
+	return err
+}
 
 const getAllConstraintsForLocation = `-- name: GetAllConstraintsForLocation :many
 SELECT schedule_id, location_id, task_id, worker_id, start_slot, end_slot, kind from constraints WHERE location_id = $1
 `
 
-func (q *Queries) GetAllConstraintsForLocation(ctx context.Context, locationID pgtype.UUID) ([]Constraint, error) {
+func (q *Queries) GetAllConstraintsForLocation(ctx context.Context, locationID *uuid.UUID) ([]Constraint, error) {
 	rows, err := q.db.Query(ctx, getAllConstraintsForLocation, locationID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Constraint
+	for rows.Next() {
+		var i Constraint
+		if err := rows.Scan(
+			&i.ScheduleID,
+			&i.LocationID,
+			&i.TaskID,
+			&i.WorkerID,
+			&i.StartSlot,
+			&i.EndSlot,
+			&i.Kind,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAllConstraintsForSchedule = `-- name: GetAllConstraintsForSchedule :many
+SELECT schedule_id, location_id, task_id, worker_id, start_slot, end_slot, kind from constraints WHERE schedule_id = $1
+`
+
+func (q *Queries) GetAllConstraintsForSchedule(ctx context.Context, scheduleID *uuid.UUID) ([]Constraint, error) {
+	rows, err := q.db.Query(ctx, getAllConstraintsForSchedule, scheduleID)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +125,7 @@ const getAllConstraintsForTask = `-- name: GetAllConstraintsForTask :many
 SELECT schedule_id, location_id, task_id, worker_id, start_slot, end_slot, kind from constraints WHERE task_id = $1
 `
 
-func (q *Queries) GetAllConstraintsForTask(ctx context.Context, taskID pgtype.UUID) ([]Constraint, error) {
+func (q *Queries) GetAllConstraintsForTask(ctx context.Context, taskID *uuid.UUID) ([]Constraint, error) {
 	rows, err := q.db.Query(ctx, getAllConstraintsForTask, taskID)
 	if err != nil {
 		return nil, err
@@ -79,7 +157,7 @@ const getAllConstraintsForWorker = `-- name: GetAllConstraintsForWorker :many
 SELECT schedule_id, location_id, task_id, worker_id, start_slot, end_slot, kind from constraints WHERE worker_id = $1
 `
 
-func (q *Queries) GetAllConstraintsForWorker(ctx context.Context, workerID pgtype.UUID) ([]Constraint, error) {
+func (q *Queries) GetAllConstraintsForWorker(ctx context.Context, workerID *uuid.UUID) ([]Constraint, error) {
 	rows, err := q.db.Query(ctx, getAllConstraintsForWorker, workerID)
 	if err != nil {
 		return nil, err
@@ -190,7 +268,7 @@ func (q *Queries) GetAllTasks(ctx context.Context) ([]Task, error) {
 }
 
 const getAllWorkers = `-- name: GetAllWorkers :many
-SELECT id, title, schedule_id from workers
+SELECT id, first_name, last_name, schedule_id from workers
 `
 
 func (q *Queries) GetAllWorkers(ctx context.Context) ([]Worker, error) {
@@ -202,7 +280,12 @@ func (q *Queries) GetAllWorkers(ctx context.Context) ([]Worker, error) {
 	var items []Worker
 	for rows.Next() {
 		var i Worker
-		if err := rows.Scan(&i.ID, &i.Title, &i.ScheduleID); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.FirstName,
+			&i.LastName,
+			&i.ScheduleID,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -218,9 +301,9 @@ SELECT schedule_id, location_id, task_id, worker_id, start_slot, end_slot, kind 
 `
 
 type GetConstraintParams struct {
-	LocationID pgtype.UUID
-	TaskID     pgtype.UUID
-	WorkerID   pgtype.UUID
+	LocationID *uuid.UUID
+	TaskID     *uuid.UUID
+	WorkerID   *uuid.UUID
 	StartSlot  pgtype.Int4
 	EndSlot    pgtype.Int4
 	Kind       ConstraintType
@@ -252,7 +335,7 @@ const getLocation = `-- name: GetLocation :one
 SELECT id, title, story, schedule_id from locations WHERE id = $1
 `
 
-func (q *Queries) GetLocation(ctx context.Context, id pgtype.UUID) (Location, error) {
+func (q *Queries) GetLocation(ctx context.Context, id *uuid.UUID) (Location, error) {
 	row := q.db.QueryRow(ctx, getLocation, id)
 	var i Location
 	err := row.Scan(
@@ -268,7 +351,7 @@ const getSchedule = `-- name: GetSchedule :one
 SELECT id, title from schedules WHERE id = $1
 `
 
-func (q *Queries) GetSchedule(ctx context.Context, id pgtype.UUID) (Schedule, error) {
+func (q *Queries) GetSchedule(ctx context.Context, id *uuid.UUID) (Schedule, error) {
 	row := q.db.QueryRow(ctx, getSchedule, id)
 	var i Schedule
 	err := row.Scan(&i.ID, &i.Title)
@@ -279,7 +362,7 @@ const getTask = `-- name: GetTask :one
 SELECT id, title, story, schedule_id from tasks WHERE id = $1
 `
 
-func (q *Queries) GetTask(ctx context.Context, id pgtype.UUID) (Task, error) {
+func (q *Queries) GetTask(ctx context.Context, id *uuid.UUID) (Task, error) {
 	row := q.db.QueryRow(ctx, getTask, id)
 	var i Task
 	err := row.Scan(
@@ -292,12 +375,198 @@ func (q *Queries) GetTask(ctx context.Context, id pgtype.UUID) (Task, error) {
 }
 
 const getWorker = `-- name: GetWorker :one
-SELECT id, title, schedule_id from workers WHERE id = $1
+SELECT id, first_name, last_name, schedule_id from workers WHERE id = $1
 `
 
-func (q *Queries) GetWorker(ctx context.Context, id pgtype.UUID) (Worker, error) {
+func (q *Queries) GetWorker(ctx context.Context, id *uuid.UUID) (Worker, error) {
 	row := q.db.QueryRow(ctx, getWorker, id)
 	var i Worker
-	err := row.Scan(&i.ID, &i.Title, &i.ScheduleID)
+	err := row.Scan(
+		&i.ID,
+		&i.FirstName,
+		&i.LastName,
+		&i.ScheduleID,
+	)
 	return i, err
+}
+
+const insertConstraint = `-- name: InsertConstraint :exec
+INSERT INTO constraints (schedule_id, location_id, task_id, worker_id, start_slot, end_slot, kind) VALUES ($1, $2, $3, $4, $5, $6, $7)
+`
+
+type InsertConstraintParams struct {
+	ScheduleID *uuid.UUID
+	LocationID *uuid.UUID
+	TaskID     *uuid.UUID
+	WorkerID   *uuid.UUID
+	StartSlot  pgtype.Int4
+	EndSlot    pgtype.Int4
+	Kind       ConstraintType
+}
+
+func (q *Queries) InsertConstraint(ctx context.Context, arg InsertConstraintParams) error {
+	_, err := q.db.Exec(ctx, insertConstraint,
+		arg.ScheduleID,
+		arg.LocationID,
+		arg.TaskID,
+		arg.WorkerID,
+		arg.StartSlot,
+		arg.EndSlot,
+		arg.Kind,
+	)
+	return err
+}
+
+type InsertConstraintsParams struct {
+	ScheduleID *uuid.UUID
+	LocationID *uuid.UUID
+	TaskID     *uuid.UUID
+	WorkerID   *uuid.UUID
+	StartSlot  pgtype.Int4
+	EndSlot    pgtype.Int4
+	Kind       ConstraintType
+}
+
+const insertLocation = `-- name: InsertLocation :exec
+INSERT INTO locations (id, title, story, schedule_id) VALUES ($1, $2, $3, $4)
+`
+
+type InsertLocationParams struct {
+	ID         *uuid.UUID
+	Title      string
+	Story      string
+	ScheduleID *uuid.UUID
+}
+
+func (q *Queries) InsertLocation(ctx context.Context, arg InsertLocationParams) error {
+	_, err := q.db.Exec(ctx, insertLocation,
+		arg.ID,
+		arg.Title,
+		arg.Story,
+		arg.ScheduleID,
+	)
+	return err
+}
+
+const insertTask = `-- name: InsertTask :exec
+INSERT INTO tasks (id, title, story, schedule_id) VALUES ($1, $2, $3, $4)
+`
+
+type InsertTaskParams struct {
+	ID         *uuid.UUID
+	Title      string
+	Story      string
+	ScheduleID *uuid.UUID
+}
+
+func (q *Queries) InsertTask(ctx context.Context, arg InsertTaskParams) error {
+	_, err := q.db.Exec(ctx, insertTask,
+		arg.ID,
+		arg.Title,
+		arg.Story,
+		arg.ScheduleID,
+	)
+	return err
+}
+
+const insertWorker = `-- name: InsertWorker :exec
+INSERT INTO workers (id, first_name, last_name, schedule_id) VALUES ($1, $2, $3, $4)
+`
+
+type InsertWorkerParams struct {
+	ID         *uuid.UUID
+	FirstName  string
+	LastName   string
+	ScheduleID *uuid.UUID
+}
+
+func (q *Queries) InsertWorker(ctx context.Context, arg InsertWorkerParams) error {
+	_, err := q.db.Exec(ctx, insertWorker,
+		arg.ID,
+		arg.FirstName,
+		arg.LastName,
+		arg.ScheduleID,
+	)
+	return err
+}
+
+const upsertLocation = `-- name: UpsertLocation :exec
+INSERT INTO locations (id, title, story, schedule_id) VALUES ($1, $2, $3, $4)
+ON CONFLICT (id) DO UPDATE SET title = $2, story = $3, schedule_id = $4
+`
+
+type UpsertLocationParams struct {
+	ID         *uuid.UUID
+	Title      string
+	Story      string
+	ScheduleID *uuid.UUID
+}
+
+func (q *Queries) UpsertLocation(ctx context.Context, arg UpsertLocationParams) error {
+	_, err := q.db.Exec(ctx, upsertLocation,
+		arg.ID,
+		arg.Title,
+		arg.Story,
+		arg.ScheduleID,
+	)
+	return err
+}
+
+const upsertSchedule = `-- name: UpsertSchedule :exec
+INSERT INTO schedules (id, title) VALUES ($1, $2) 
+ON CONFLICT (id) DO UPDATE SET title = $2
+`
+
+type UpsertScheduleParams struct {
+	ID    *uuid.UUID
+	Title string
+}
+
+func (q *Queries) UpsertSchedule(ctx context.Context, arg UpsertScheduleParams) error {
+	_, err := q.db.Exec(ctx, upsertSchedule, arg.ID, arg.Title)
+	return err
+}
+
+const upsertTask = `-- name: UpsertTask :exec
+INSERT INTO tasks (id, title, story, schedule_id) VALUES ($1, $2, $3, $4)
+ON CONFLICT (id) DO UPDATE SET title = $2, story = $3, schedule_id = $4
+`
+
+type UpsertTaskParams struct {
+	ID         *uuid.UUID
+	Title      string
+	Story      string
+	ScheduleID *uuid.UUID
+}
+
+func (q *Queries) UpsertTask(ctx context.Context, arg UpsertTaskParams) error {
+	_, err := q.db.Exec(ctx, upsertTask,
+		arg.ID,
+		arg.Title,
+		arg.Story,
+		arg.ScheduleID,
+	)
+	return err
+}
+
+const upsertWorker = `-- name: UpsertWorker :exec
+INSERT INTO workers (id, first_name, last_name, schedule_id) VALUES ($1, $2, $3, $4)
+ON CONFLICT (id) DO UPDATE SET first_name = $2, last_name = $3, schedule_id = $4
+`
+
+type UpsertWorkerParams struct {
+	ID         *uuid.UUID
+	FirstName  string
+	LastName   string
+	ScheduleID *uuid.UUID
+}
+
+func (q *Queries) UpsertWorker(ctx context.Context, arg UpsertWorkerParams) error {
+	_, err := q.db.Exec(ctx, upsertWorker,
+		arg.ID,
+		arg.FirstName,
+		arg.LastName,
+		arg.ScheduleID,
+	)
+	return err
 }

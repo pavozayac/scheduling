@@ -11,6 +11,22 @@ type Task struct {
 	description string
 }
 
+func (t Task) Id() shared.Identity {
+	return t.id
+}
+
+func (t Task) ScheduleId() shared.Identity {
+	return t.scheduleId
+}
+
+func (t Task) Name() string {
+	return t.name
+}
+
+func (t Task) Description() string {
+	return t.description
+}
+
 func NewTask(id, scheduleId shared.Identity, name, description string) (*Task, error) {
 	if id == shared.NilIdentity || scheduleId == shared.NilIdentity || name == "" || description == "" {
 		return nil, shared.ErrInvalidArguments

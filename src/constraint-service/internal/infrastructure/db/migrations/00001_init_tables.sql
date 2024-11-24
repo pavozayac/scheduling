@@ -6,29 +6,30 @@ CREATE TABLE schedules (
 );
 
 CREATE TABLE workers (
-    id uuid PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    title varchar(200) NOT NULL,
-    schedule_id uuid REFERENCES schedules(id) NOT NULL
+    id uuid PRIMARY KEY,
+    first_name varchar(200) NOT NULL,
+    last_name varchar(200) NOT NULL,
+    schedule_id uuid NOT NULL REFERENCES schedules(id) ON DELETE CASCADE
 );
 
 CREATE TABLE tasks (
-    id uuid PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    id uuid PRIMARY KEY,
     title varchar(200) NOT NULL,
     story varchar(1000) NOT NULL,
-    schedule_id uuid REFERENCES schedules(id) NOT NULL
+    schedule_id uuid NOT NULL REFERENCES schedules(id) ON DELETE CASCADE
 );
 
 CREATE TABLE locations (
-    id uuid PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    id uuid PRIMARY KEY,
     title varchar(200) NOT NULL,
     story varchar(1000) NOT NULL,
-    schedule_id uuid REFERENCES schedules(id) NOT NULL
+    schedule_id uuid NOT NULL REFERENCES schedules(id) ON DELETE CASCADE
 );
 
 CREATE TYPE constraint_type as ENUM ('must', 'cannot');
 
 CREATE TABLE constraints (
-    schedule_id uuid REFERENCES schedules(id),
+    schedule_id uuid REFERENCES schedules(id) ON DELETE CASCADE,
     location_id uuid REFERENCES locations(id),
     task_id uuid REFERENCES tasks(id),
     worker_id uuid REFERENCES workers(id),

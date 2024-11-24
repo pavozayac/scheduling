@@ -10,6 +10,18 @@ type Schedule struct {
 	constraints Constraints
 }
 
+func (s Schedule) Id() shared.Identity {
+	return s.id
+}
+
+func (s Schedule) Title() string {
+	return s.title
+}
+
+func (s Schedule) Constraints() Constraints {
+	return s.constraints
+}
+
 func NewSchedule(id shared.Identity, title string, constraints Constraints) (*Schedule, error) {
 	if id == shared.NilIdentity || title == "" || constraints == nil {
 		return nil, shared.ErrInvalidArguments
