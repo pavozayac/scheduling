@@ -28,7 +28,7 @@ func (w *Worker) Id() shared.Identity {
 	return w.id
 }
 
-func (w *Worker) ScheudleId() shared.Identity {
+func (w *Worker) ScheduleId() shared.Identity {
 	return w.scheduleId
 }
 

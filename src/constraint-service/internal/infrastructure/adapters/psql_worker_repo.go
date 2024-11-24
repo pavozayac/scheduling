@@ -25,7 +25,7 @@ func (r *PsqlWorkerRepo) SaveOrUpdateWorker(ctx context.Context, worker model.Wo
 			ID:         uuid.UUID(worker.Id()),
 			FirstName:  worker.FirstName(),
 			LastName:   worker.LastName(),
-			ScheduleID: uuid.UUID(worker.ScheudleId()),
+			ScheduleID: uuid.UUID(worker.ScheduleId()),
 		})
 	})
 }
