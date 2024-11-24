@@ -24,137 +24,178 @@ var mockId2 = shared.MockIdentityGenerator{}.Generate()
 var mockId3 = shared.MockIdentityGenerator{}.Generate()
 var mockId4 = shared.MockIdentityGenerator{}.Generate()
 
-func TestShouldConstructValidPairConstraints(t *testing.T) {
-	t.Run("NewLocationTaskConstraint", func(t *testing.T) {
-		constraint, err := NewLocationTaskConstraint(mockId1, mockId2, mockId3, Must)
-
-		assert.Equal(t, Constraint{mockId1, shared.NilIdentity, mockId3, mockId2, -1, -1, Must}, constraint)
-		assert.Nil(t, err)
-	})
-
-	t.Run("NewTaskWorkerConstraint", func(t *testing.T) {
-		constraint, err := NewTaskWorkerConstraint(mockId1, mockId2, mockId3, Must)
-
-		assert.Equal(t, Constraint{mockId1, mockId2, mockId3, shared.NilIdentity, -1, -1, Must}, constraint)
-		assert.Nil(t, err)
-	})
-
-	t.Run("NewLocationWorkerConstraint", func(t *testing.T) {
-		constraint, err := NewLocationWorkerConstraint(mockId1, mockId2, mockId3, Must)
-
-		assert.Equal(t, Constraint{mockId1, mockId3, shared.NilIdentity, mockId2, -1, -1, Must}, constraint)
-		assert.Nil(t, err)
-	})
-}
-
-func TestShouldThrowOnInvalidPairConstraints(t *testing.T) {
-	var testcases = []struct {
-		input  Input
-		output Output
-	}{
-		{
-			Input{shared.NilIdentity, mockId2, mockId3, Must},
-			Output{Constraint{}, shared.ErrNilIdentity},
-		},
-		{
-			Input{mockId1, shared.NilIdentity, mockId3, Cannot},
-			Output{Constraint{}, shared.ErrNilIdentity},
-		},
-		{
-			Input{mockId1, mockId2, shared.NilIdentity, Must},
-			Output{Constraint{}, shared.ErrNilIdentity},
-		},
-	}
-
-	var constructors = []struct {
-		function func(shared.Identity, shared.Identity, shared.Identity, ConstraintType) (Constraint, error)
-		name     string
-	}{
-		{NewTaskWorkerConstraint, "NewTaskWorkerConstraint"},
-		{NewLocationTaskConstraint, "NewLocationTaskConstraint"},
-		{NewLocationWorkerConstraint, "NewLocationWorkerConstraint"},
-	}
-
-	for _, testcase := range testcases {
-		for _, constructor := range constructors {
-			t.Run(constructor.name, func(t *testing.T) {
-				c, err := constructor.function(testcase.input.scheduleId, testcase.input.firstArg, testcase.input.secondArg, testcase.input.thirdArg)
-
-				assert.Equal(t, testcase.output.expectedConstraint, c)
-				assert.ErrorIs(t, err, testcase.output.expectedError)
-			})
-		}
-	}
-}
-
-func TestShouldThrowOnInvalidTimeConstraints(t *testing.T) {
-	type TimeInput struct {
-		scheduleId shared.Identity
-		id         shared.Identity
-		startTime  int
-		endTime    int
-	}
-
+func TestShouldConstructValidConstraints(t *testing.T) {
 	testcases := []struct {
-		input  TimeInput
-		output Output
+		name           string
+		scheduleId     shared.Identity
+		workerId       shared.Identity
+		taskId         shared.Identity
+		locationId     shared.Identity
+		startTime      int
+		endTime        int
+		constraintType ConstraintType
+		expected       Constraint
 	}{
 		{
-			TimeInput{mockId1, mockId2, -1, 2},
-			Output{Constraint{}, shared.ErrInvalidArguments},
+			name:           "LocationTask",
+			scheduleId:     mockId1,
+			workerId:       shared.NilIdentity,
+			taskId:         mockId3,
+			locationId:     mockId2,
+			startTime:      -1,
+			endTime:        -1,
+			constraintType: Must,
+			expected:       Constraint{mockId1, shared.NilIdentity, mockId3, mockId2, -1, -1, Must},
 		},
 		{
-			TimeInput{mockId1, mockId2, 1, -1},
-			Output{Constraint{}, shared.ErrInvalidArguments},
+			name:           "TaskWorker",
+			scheduleId:     mockId1,
+			workerId:       mockId2,
+			taskId:         mockId3,
+			locationId:     shared.NilIdentity,
+			startTime:      -1,
+			endTime:        -1,
+			constraintType: Must,
+			expected:       Constraint{mockId1, mockId2, mockId3, shared.NilIdentity, -1, -1, Must},
 		},
 		{
-			TimeInput{mockId1, mockId2, 2, -1},
-			Output{Constraint{}, shared.ErrInvalidArguments},
+			name:           "LocationWorker",
+			scheduleId:     mockId1,
+			workerId:       mockId3,
+			taskId:         shared.NilIdentity,
+			locationId:     mockId2,
+			startTime:      -1,
+			endTime:        -1,
+			constraintType: Must,
+			expected:       Constraint{mockId1, mockId3, shared.NilIdentity, mockId2, -1, -1, Must},
+		},
+		{
+			name:           "WorkerTime",
+			scheduleId:     mockId1,
+			workerId:       mockId2,
+			taskId:         shared.NilIdentity,
+			locationId:     shared.NilIdentity,
+			startTime:      3456,
+			endTime:        4567,
+			constraintType: Must,
+			expected:       Constraint{mockId1, mockId2, shared.NilIdentity, shared.NilIdentity, 3456, 4567, Must},
+		},
+		{
+			name:           "TaskTime",
+			scheduleId:     mockId1,
+			workerId:       shared.NilIdentity,
+			taskId:         mockId2,
+			locationId:     shared.NilIdentity,
+			startTime:      3456,
+			endTime:        4567,
+			constraintType: Must,
+			expected:       Constraint{mockId1, shared.NilIdentity, mockId2, shared.NilIdentity, 3456, 4567, Must},
+		},
+		{
+			name:           "LocationTime",
+			scheduleId:     mockId1,
+			workerId:       shared.NilIdentity,
+			taskId:         shared.NilIdentity,
+			locationId:     mockId2,
+			startTime:      3456,
+			endTime:        4567,
+			constraintType: Must,
+			expected:       Constraint{mockId1, shared.NilIdentity, shared.NilIdentity, mockId2, 3456, 4567, Must},
 		},
 	}
 
-	constructors := []struct {
-		function func(shared.Identity, shared.Identity, int, int, ConstraintType) (Constraint, error)
-		name     string
-	}{
-		{NewWorkerTimeConstraint, "NewWorkerTimeConstraint"},
-		{NewTaskTimeConstraint, "NewTaskTimeConstraint"},
-		{NewLocationTimeConstraint, "NewLocationTimeConstraint"},
-	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			constraint, err := NewConstraint(
+				tc.scheduleId,
+				tc.workerId,
+				tc.taskId,
+				tc.locationId,
+				tc.startTime,
+				tc.endTime,
+				tc.constraintType,
+			)
 
-	for _, testcase := range testcases {
-		for _, constructor := range constructors {
-			t.Run(constructor.name, func(t *testing.T) {
-				c, err := constructor.function(testcase.input.scheduleId, testcase.input.id, testcase.input.startTime, testcase.input.endTime, Must)
-
-				assert.Equal(t, testcase.output.expectedConstraint, c)
-				assert.ErrorIs(t, err, testcase.output.expectedError)
-			})
-		}
+			assert.Equal(t, tc.expected, constraint)
+			assert.NoError(t, err)
+		})
 	}
 }
 
-func TestShouldConstructValidTimeConstraints(t *testing.T) {
-	t.Run("NewWorkerTimeConstraint", func(t *testing.T) {
-		constraint, err := NewWorkerTimeConstraint(mockId1, mockId2, 3456, 4567, Must)
+func TestShouldThrowOnInvalidConstraints(t *testing.T) {
+	testcases := []struct {
+		name           string
+		scheduleId     shared.Identity
+		workerId       shared.Identity
+		taskId         shared.Identity
+		locationId     shared.Identity
+		startTime      int
+		endTime        int
+		constraintType ConstraintType
+		expectedError  error
+	}{
+		{
+			name:           "Nil ScheduleId",
+			scheduleId:     shared.NilIdentity,
+			workerId:       mockId2,
+			taskId:         mockId3,
+			locationId:     shared.NilIdentity,
+			startTime:      -1,
+			endTime:        -1,
+			constraintType: Must,
+			expectedError:  shared.ErrNilIdentity,
+		},
+		{
+			name:           "Invalid Time Range",
+			scheduleId:     mockId1,
+			workerId:       mockId2,
+			taskId:         shared.NilIdentity,
+			locationId:     shared.NilIdentity,
+			startTime:      5,
+			endTime:        3,
+			constraintType: Must,
+			expectedError:  shared.ErrInvalidArguments,
+		},
+		{
+			name:           "Too Many Aspects Defined",
+			scheduleId:     mockId1,
+			workerId:       mockId2,
+			taskId:         mockId3,
+			locationId:     mockId4,
+			startTime:      -1,
+			endTime:        -1,
+			constraintType: Must,
+			expectedError:  shared.ErrInvalidArguments,
+		},
+		{
+			name:           "Invalid Type",
+			scheduleId:     mockId1,
+			workerId:       mockId2,
+			taskId:         mockId3,
+			locationId:     mockId4,
+			startTime:      -1,
+			endTime:        -1,
+			constraintType: "sometype",
+			expectedError:  shared.ErrInvalidArguments,
+		},
+	}
 
-		assert.Equal(t, Constraint{mockId1, mockId2, shared.NilIdentity, shared.NilIdentity, 3456, 4567, Must}, constraint)
-		assert.Nil(t, err)
-	})
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			constraint, err := NewConstraint(
+				tc.scheduleId,
+				tc.workerId,
+				tc.taskId,
+				tc.locationId,
+				tc.startTime,
+				tc.endTime,
+				tc.constraintType,
+			)
 
-	t.Run("NewTaskTimeConstraint", func(t *testing.T) {
-		constraint, err := NewTaskTimeConstraint(mockId1, mockId2, 3456, 4567, Must)
-
-		assert.Equal(t, Constraint{mockId1, shared.NilIdentity, mockId2, shared.NilIdentity, 3456, 4567, Must}, constraint)
-		assert.Nil(t, err)
-	})
-
-	t.Run("NewLocationTimeConstraint", func(t *testing.T) {
-		constraint, err := NewLocationTimeConstraint(mockId1, mockId2, 3456, 4567, Must)
-
-		assert.Equal(t, Constraint{mockId1, shared.NilIdentity, shared.NilIdentity, mockId2, 3456, 4567, Must}, constraint)
-		assert.Nil(t, err)
-	})
+			assert.Equal(t, Constraint{}, constraint)
+			assert.ErrorIs(t, err, tc.expectedError)
+		})
+	}
 }
 
 func TestShouldDetectConflicts(t *testing.T) {
