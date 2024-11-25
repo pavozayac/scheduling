@@ -27,9 +27,11 @@ jobs:
         with:
           go-version: ${{ env.GO_VER }}
           cache-dependency-path: go.sum
+      - name: Setup Task
+        run: sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b ~/.local/bin
       - name: Display Go version
         run: go version
       - name: Install dependencies
-        run: make build
+        run: task build
       - name: Run tests
-        run: make test
+        run: task test
