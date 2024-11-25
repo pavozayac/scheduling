@@ -1,4 +1,4 @@
-name: container-service - run tests
+name: container-service - build, test and push image
 
 on:
   push:
