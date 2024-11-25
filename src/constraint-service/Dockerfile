@@ -1,4 +1,4 @@
-FROM golang:1.22.5-alpine as builder
+FROM golang:1.22.5-alpine AS builder
 
 RUN apk add make
 
@@ -6,7 +6,9 @@ WORKDIR /app
 
 COPY ./ ./
 
-RUN CGO_ENABLED=0 GOOS=linux make build
+RUN go install github.com/go-task/task/v3/cmd/task@latest
+
+RUN CGO_ENABLED=0 GOOS=linux task build
 
 FROM scratch
 
