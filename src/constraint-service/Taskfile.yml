@@ -1,0 +1,50 @@
+version: "3"
+
+interval: 1s
+
+vars:
+  MAIN_PACKAGE: github.com/pavozayac/scheduling/src/constraint-service/cmd/server
+  BINARY_NAME: server
+
+tasks:
+  test:
+    env:
+      CGO_ENABLED: 1
+    cmds:
+      - go test -v -race -buildvcs ./...
+  tidy:
+    cmds:
+      - go mod tidy -v
+      - go fmt ./...
+  build:
+    cmds:
+      - go build -o /tmp/bin/{{.BINARY_NAME}} {{.MAIN_PACKAGE}}
+  run:
+    deps:
+      - build
+    cmds:
+      - /tmp/bin/{{.BINARY_NAME}}
+  live:
+    watch: true
+    sources:
+      - "**/*.go"
+    cmds:
+      - go build -o /tmp/bin/{{.BINARY_NAME}} {{.MAIN_PACKAGE}}
+      - /tmp/bin/{{.BINARY_NAME}}
+  audit:
+    deps:
+      - test
+    cmds:
+      - go mod tidy -diff
+      - go mod verify
+      - test -z "$(gofmt -l .)"
+      - go vet ./...
+      - go run honnef.co/go/tools/cmd/staticcheck@latest -checks=all,-ST1000,-U1000,-ST1003 ./...
+      - go run golang.org/x/vuln/cmd/govulncheck@latest ./...
+  no-dirty:
+    cmds:
+      - test -z "$(git status --porcelain)"
+  push:
+    deps: [no-dirty, audit]
+    cmds:
+      - git push
