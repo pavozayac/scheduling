@@ -1,14 +1,16 @@
 package ports
 
 import (
+	"context"
+
 	"github.com/pavozayac/scheduling/src/constraint-service/internal/domain/model"
 	"github.com/pavozayac/scheduling/src/constraint-service/internal/domain/shared"
 )
 
 type TaskRepository interface {
-	SaveOrUpdateTask(model.Task) error
+	SaveOrUpdateTask(context.Context, model.Task) error
 
-	GetTask(shared.Identity) (model.Task, error)
+	GetTask(context.Context, shared.Identity) (model.Task, error)
 
-	RemoveTask(shared.Identity) error
+	RemoveTask(context.Context, shared.Identity) error
 }
