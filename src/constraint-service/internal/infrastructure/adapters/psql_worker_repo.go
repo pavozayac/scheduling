@@ -19,6 +19,10 @@ func (r PsqlWorkerRepo) Db() pgx.Conn {
 	return r.db
 }
 
+func NewPsqlWorkerRepo(db pgx.Conn) *PsqlWorkerRepo {
+	return &PsqlWorkerRepo{db: db}
+}
+
 func (r *PsqlWorkerRepo) SaveOrUpdateWorker(ctx context.Context, worker model.Worker) error {
 	return ishared.TransactionDecorator(ctx, r, func(q *sqlc.Queries, ctx context.Context) error {
 		id := uuid.UUID(worker.Id())

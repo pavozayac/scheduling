@@ -20,6 +20,10 @@ func (r PsqlTaskRepo) Db() pgx.Conn {
 	return r.db
 }
 
+func NewPsqlTaskRepo(db pgx.Conn) *PsqlTaskRepo {
+	return &PsqlTaskRepo{db: db}
+}
+
 func (r *PsqlTaskRepo) SaveOrUpdateTask(ctx context.Context, task model.Task) error {
 	return ishared.TransactionDecorator(ctx, r, func(q *sqlc.Queries, ctx context.Context) error {
 		taskID := uuid.UUID(task.Id())

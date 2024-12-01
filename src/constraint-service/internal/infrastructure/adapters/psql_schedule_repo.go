@@ -20,6 +20,10 @@ func (r PsqlScheduleRepo) Db() pgx.Conn {
 	return r.db
 }
 
+func NewPsqlScheduleRepo(db pgx.Conn) *PsqlScheduleRepo {
+	return &PsqlScheduleRepo{db: db}
+}
+
 func (r *PsqlScheduleRepo) SaveOrUpdateSchedule(ctx context.Context, schedule model.Schedule) error {
 	return ishared.TransactionDecorator(ctx, r, func(q *sqlc.Queries, ctx context.Context) error {
 		// Save/update schedule

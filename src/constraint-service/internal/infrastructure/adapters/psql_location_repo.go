@@ -20,6 +20,10 @@ func (r PsqlLocationRepo) Db() pgx.Conn {
 	return r.db
 }
 
+func NewPsqlLocationRepo(db pgx.Conn) *PsqlLocationRepo {
+	return &PsqlLocationRepo{db: db}
+}
+
 func (r *PsqlLocationRepo) SaveOrUpdateLocation(ctx context.Context, location model.Location) error {
 	return ishared.TransactionDecorator(ctx, r, func(q *sqlc.Queries, ctx context.Context) error {
 		id := uuid.UUID(location.Id())
