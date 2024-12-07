@@ -1,14 +1,19 @@
 package main
 
 import (
+	"context"
 	"log"
+	"net"
 	"os"
 
-	"github.com/99designs/gqlgen/graphql/handler"
-	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5"
 	_ "github.com/jackc/pgx/v5"
-	"github.com/pavozayac/scheduling/src/constraint-service/internal/application/graph"
+	"github.com/pavozayac/scheduling/src/constraint-service/internal/application/protobuf"
+	"github.com/pavozayac/scheduling/src/constraint-service/internal/application/rpc"
+	"github.com/pavozayac/scheduling/src/constraint-service/internal/application/services"
+	"github.com/pavozayac/scheduling/src/constraint-service/internal/infrastructure/adapters"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 const defaultPort = "8080"
@@ -19,18 +24,35 @@ func main() {
 		port = defaultPort
 	}
 
-	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{}}))
+	s := grpc.NewServer()
 
-	r := gin.Default()
+	db, err := pgx.Connect(context.Background(), "postgresql://postgres:password@localhost:5432/scheduling")
 
-	r.GET("/", func(c *gin.Context) {
-		playground.Handler("GraphQL playground", "/query")(c.Writer, c.Request)
-	})
+	if err != nil {
+		log.Fatalf("failed to connect to database: %v", err)
+	}
 
-	r.POST("/query", func(c *gin.Context) {
-		srv.ServeHTTP(c.Writer, c.Request)
-	})
+	scheduleService := services.NewScheduleService(adapters.NewPsqlScheduleRepo(*db))
+	locationService := services.NewLocationService(adapters.NewPsqlLocationRepo(*db))
+	taskService := services.NewTaskService(adapters.NewPsqlTaskRepo(*db))
+	workerService := services.NewWorkerService(adapters.NewPsqlWorkerRepo(*db))
 
-	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
-	log.Fatal(r.Run())
+	grpcServer := rpc.NewGrpcServer(scheduleService, locationService, taskService, workerService)
+
+	protobuf.RegisterScheduleServiceServer(s, &grpcServer)
+	protobuf.RegisterLocationServiceServer(s, &grpcServer)
+	protobuf.RegisterTaskServiceServer(s, &grpcServer)
+	protobuf.RegisterWorkerServiceServer(s, &grpcServer)
+
+	reflection.Register(s)
+
+	lis, err := net.Listen("tcp", ":"+port)
+
+	if err != nil {
+		log.Fatalf("failed to listen for TCP: %v", err)
+	}
+
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
+	}
 }
