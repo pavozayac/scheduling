@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/pavozayac/scheduling/src/constraint-service/internal/domain/model"
+	"github.com/pavozayac/scheduling/src/constraint-service/internal/domain/ports"
 
 	"github.com/pavozayac/scheduling/src/constraint-service/internal/domain/shared"
 	"github.com/pavozayac/scheduling/src/constraint-service/internal/infrastructure/db/sqlc"
@@ -69,3 +70,5 @@ func (r *PsqlLocationRepo) DeleteLocation(ctx context.Context, id shared.Identit
 		return q.DeleteLocation(ctx, &locationId)
 	})
 }
+
+var _ ports.LocationRepository = &PsqlLocationRepo{}
