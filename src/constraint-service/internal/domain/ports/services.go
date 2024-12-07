@@ -40,25 +40,25 @@ type WorkerDTO struct {
 }
 
 type ScheduleService interface {
-	GetSchedule(context.Context, string) (ScheduleDTO, error)
+	GetSchedule(context.Context, string) (*ScheduleDTO, error)
 	CreateOrModifySchedule(context.Context, ScheduleDTO) (*ScheduleDTO, error)
 	RemoveSchedule(context.Context, string) error
 }
 
 type LocationService interface {
-	GetLocation(context.Context, string) (LocationDTO, error)
+	GetLocation(context.Context, string) (*LocationDTO, error)
 	CreateOrModifyLocation(context.Context, LocationDTO) (*LocationDTO, error)
 	RemoveLocation(context.Context, string) error
 }
 
 type TaskService interface {
-	GetTask(context.Context, string) (TaskDTO, error)
+	GetTask(context.Context, string) (*TaskDTO, error)
 	CreateOrModifyTask(context.Context, TaskDTO) (*TaskDTO, error)
 	RemoveTask(context.Context, string) error
 }
 
 type WorkerService interface {
-	GetWorker(context.Context, string) (WorkerDTO, error)
+	GetWorker(context.Context, string) (*WorkerDTO, error)
 	CreateOrModifyWorker(context.Context, WorkerDTO) (*WorkerDTO, error)
 	RemoveWorker(context.Context, string) error
 }

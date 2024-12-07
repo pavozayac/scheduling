@@ -10,7 +10,7 @@ import (
 type TaskRepository interface {
 	SaveOrUpdateTask(context.Context, model.Task) error
 
-	GetTask(context.Context, shared.Identity) (model.Task, error)
+	GetTask(context.Context, shared.Identity) (*model.Task, error)
 
-	RemoveTask(context.Context, shared.Identity) error
+	DeleteTask(context.Context, shared.Identity) error
 }

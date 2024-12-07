@@ -10,7 +10,7 @@ import (
 type LocationRepository interface {
 	SaveOrUpdateLocation(context.Context, model.Location) error
 
-	GetLocation(context.Context, shared.Identity) (model.Location, error)
+	GetLocation(context.Context, shared.Identity) (*model.Location, error)
 
-	RemoveLocation(context.Context, shared.Identity) error
+	DeleteLocation(context.Context, shared.Identity) error
 }

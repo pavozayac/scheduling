@@ -10,7 +10,7 @@ import (
 type ScheduleRepository interface {
 	SaveOrUpdateSchedule(context.Context, model.Schedule) error
 
-	GetSchedule(context.Context, shared.Identity) (model.Schedule, error)
+	GetSchedule(context.Context, shared.Identity) (*model.Schedule, error)
 
-	RemoveSchedule(context.Context, shared.Identity) error
+	DeleteSchedule(context.Context, shared.Identity) error
 }

@@ -10,7 +10,7 @@ import (
 type WorkerRepository interface {
 	SaveOrUpdateWorker(context.Context, model.Worker) error
 
-	GetWorker(context.Context, shared.Identity) (model.Worker, error)
+	GetWorker(context.Context, shared.Identity) (*model.Worker, error)
 
-	RemoveWorker(context.Context, shared.Identity) error
+	DeleteWorker(context.Context, shared.Identity) error
 }
