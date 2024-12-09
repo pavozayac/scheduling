@@ -1,0 +1,41 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: postgres
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: constraints
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 1s
+      timeout: 5s
+      retries: 10
+    ports:
+      - 5432:5432
+    volumes:
+      - cs-db:/var/lib/postgresql/data
+
+  web:
+    depends_on:
+      db:
+        condition: service_healthy
+    container_name: cs
+    build: .
+    ports:
+      - 8001:8001
+    environment:
+      CS_PORT: 8001
+      CS_REFLECTION: true
+      CS_DB_STRING: postgres://user:password@db:5432/constraints?sslmode=disable
+      CS_STARTUP_MIGRATE: true
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 1s
+      timeout: 5s
+      retries: 10
+    links:
+      - db
+
+volumes:
+  cs-db:

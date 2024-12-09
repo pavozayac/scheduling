@@ -205,7 +205,7 @@ func TestScheduleRepo(t *testing.T) {
 			scheduleId, workerId, 1, 2, "must")
 		assert.NoError(t, err)
 
-		err = repo.RemoveSchedule(context.Background(), scheduleId)
+		err = repo.DeleteSchedule(context.Background(), scheduleId)
 		assert.NoError(t, err)
 
 		var count int

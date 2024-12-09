@@ -7,6 +7,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/pavozayac/scheduling/src/constraint-service/internal/domain/model"
+	"github.com/pavozayac/scheduling/src/constraint-service/internal/domain/ports"
 	"github.com/pavozayac/scheduling/src/constraint-service/internal/domain/shared"
 	"github.com/pavozayac/scheduling/src/constraint-service/internal/infrastructure/db/sqlc"
 	ishared "github.com/pavozayac/scheduling/src/constraint-service/internal/infrastructure/shared"
@@ -18,6 +19,10 @@ type PsqlScheduleRepo struct {
 
 func (r PsqlScheduleRepo) Db() pgx.Conn {
 	return r.db
+}
+
+func NewPsqlScheduleRepo(db pgx.Conn) *PsqlScheduleRepo {
+	return &PsqlScheduleRepo{db: db}
 }
 
 func (r *PsqlScheduleRepo) SaveOrUpdateSchedule(ctx context.Context, schedule model.Schedule) error {
@@ -58,7 +63,7 @@ func (r *PsqlScheduleRepo) SaveOrUpdateSchedule(ctx context.Context, schedule mo
 	})
 }
 
-func (r *PsqlScheduleRepo) GetSchedule(ctx context.Context, id shared.Identity) (model.Schedule, error) {
+func (r *PsqlScheduleRepo) GetSchedule(ctx context.Context, id shared.Identity) (*model.Schedule, error) {
 	var schedule model.Schedule
 	err := ishared.TransactionDecorator(ctx, r, func(q *sqlc.Queries, ctx context.Context) error {
 		// Get schedule
@@ -103,10 +108,10 @@ func (r *PsqlScheduleRepo) GetSchedule(ctx context.Context, id shared.Identity) 
 		return nil
 	})
 
-	return schedule, err
+	return &schedule, err
 }
 
-func (r *PsqlScheduleRepo) RemoveSchedule(ctx context.Context, id shared.Identity) error {
+func (r *PsqlScheduleRepo) DeleteSchedule(ctx context.Context, id shared.Identity) error {
 	return ishared.TransactionDecorator(ctx, r, func(q *sqlc.Queries, ctx context.Context) error {
 		// Delete constraints first due to foreign key
 		scheduleID := uuid.UUID(id)
@@ -119,3 +124,5 @@ func (r *PsqlScheduleRepo) RemoveSchedule(ctx context.Context, id shared.Identit
 		return q.DeleteSchedule(ctx, &scheduleID)
 	})
 }
+
+var _ ports.ScheduleRepository = &PsqlScheduleRepo{}

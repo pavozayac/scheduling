@@ -1,14 +1,16 @@
 package ports
 
 import (
+	"context"
+
 	"github.com/pavozayac/scheduling/src/constraint-service/internal/domain/model"
 	"github.com/pavozayac/scheduling/src/constraint-service/internal/domain/shared"
 )
 
 type LocationRepository interface {
-	SaveOrUpdateLocation(model.Location) error
+	SaveOrUpdateLocation(context.Context, model.Location) error
 
-	GetLocation(shared.Identity) (model.Location, error)
+	GetLocation(context.Context, shared.Identity) (*model.Location, error)
 
-	RemoveLocation(shared.Identity) error
+	DeleteLocation(context.Context, shared.Identity) error
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/pavozayac/scheduling/src/constraint-service/internal/domain/model"
+	"github.com/pavozayac/scheduling/src/constraint-service/internal/domain/ports"
 	"github.com/pavozayac/scheduling/src/constraint-service/internal/domain/shared"
 	"github.com/pavozayac/scheduling/src/constraint-service/internal/infrastructure/db/sqlc"
 	ishared "github.com/pavozayac/scheduling/src/constraint-service/internal/infrastructure/shared"
@@ -17,6 +18,10 @@ type PsqlWorkerRepo struct {
 
 func (r PsqlWorkerRepo) Db() pgx.Conn {
 	return r.db
+}
+
+func NewPsqlWorkerRepo(db pgx.Conn) *PsqlWorkerRepo {
+	return &PsqlWorkerRepo{db: db}
 }
 
 func (r *PsqlWorkerRepo) SaveOrUpdateWorker(ctx context.Context, worker model.Worker) error {
@@ -63,3 +68,5 @@ func (r *PsqlWorkerRepo) DeleteWorker(ctx context.Context, id shared.Identity) e
 		return q.DeleteWorker(ctx, &uuidID)
 	})
 }
+
+var _ ports.WorkerRepository = &PsqlWorkerRepo{}

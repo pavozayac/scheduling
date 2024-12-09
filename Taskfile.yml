@@ -1,0 +1,6 @@
+version: "3"
+
+tasks:
+  proto:
+    cmds:
+      - protoc protobuf/constraints.proto --go_out=./src/constraint-service/internal/application --go_opt=paths=source_relative --go-grpc_out=./src/constraint-service/internal/application --go-grpc_opt=paths=source_relative

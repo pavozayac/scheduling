@@ -1,0 +1,138 @@
+syntax = "proto3";
+
+option go_package = "./src/constraint-service/internal/application/protobuf";
+
+// Schedule Service
+service ScheduleService {
+  rpc CreateSchedule(CreateScheduleRequest) returns (ScheduleResponse) {}
+  rpc ReadSchedule(ScheduleRequest) returns (ScheduleResponse) {}
+  rpc UpdateSchedule(UpdateScheduleRequest) returns (ScheduleResponse) {}
+  rpc DeleteSchedule(ScheduleRequest) returns (ScheduleResponse) {}
+}
+
+// Worker Service
+service WorkerService {
+  rpc CreateWorker(CreateWorkerRequest) returns (WorkerResponse) {}
+  rpc ReadWorker(WorkerRequest) returns (WorkerResponse) {}
+  rpc UpdateWorker(UpdateWorkerRequest) returns (WorkerResponse) {}
+  rpc DeleteWorker(WorkerRequest) returns (WorkerResponse) {}
+}
+
+// Task Service
+service TaskService {
+  rpc CreateTask(CreateTaskRequest) returns (TaskResponse) {}
+  rpc ReadTask(TaskRequest) returns (TaskResponse) {}
+  rpc UpdateTask(UpdateTaskRequest) returns (TaskResponse) {}
+  rpc DeleteTask(TaskRequest) returns (TaskResponse) {}
+}
+
+// Location Service
+service LocationService {
+  rpc CreateLocation(CreateLocationRequest) returns (LocationResponse) {}
+  rpc ReadLocation(LocationRequest) returns (LocationResponse) {}
+  rpc UpdateLocation(UpdateLocationRequest) returns (LocationResponse) {}
+  rpc DeleteLocation(LocationRequest) returns (LocationResponse) {}
+}
+
+// Schedule Messages
+message ScheduleRequest { optional string id = 1; }
+
+message CreateScheduleRequest {
+  optional string title = 1;
+  repeated Constraint constraints = 2;
+}
+
+message UpdateScheduleRequest {
+  optional string id = 1;
+  optional string title = 2;
+  repeated Constraint constraints = 3;
+}
+
+message ScheduleResponse {
+  optional string id = 1;
+  optional string title = 2;
+  repeated Constraint constraints = 3;
+}
+
+message WorkerRequest { optional string id = 1; }
+
+message CreateWorkerRequest {
+  optional string firstName = 1;
+  optional string lastName = 2;
+  optional string scheduleId = 3;
+}
+
+message UpdateWorkerRequest {
+  optional string id = 1;
+  optional string firstName = 2;
+  optional string lastName = 3;
+  optional string scheduleId = 4;
+}
+
+message WorkerResponse {
+  optional string id = 1;
+  optional string firstName = 2;
+  optional string lastName = 3;
+  optional string scheduleId = 4;
+}
+
+// Task Messages
+message TaskRequest { optional string id = 1; }
+
+message CreateTaskRequest {
+  optional string title = 1;
+  optional string description = 2;
+  optional string scheduleId = 3;
+}
+
+message UpdateTaskRequest {
+  optional string id = 1;
+  optional string title = 2;
+  optional string description = 3;
+  optional string scheduleId = 4;
+}
+
+message TaskResponse {
+  optional string id = 1;
+  optional string title = 2;
+  optional string description = 3;
+  optional string scheduleId = 4;
+}
+
+// Location Messages
+message LocationRequest { optional string id = 1; }
+
+message CreateLocationRequest {
+  optional string title = 1;
+  optional string description = 2;
+  optional string scheduleId = 3;
+}
+
+message UpdateLocationRequest {
+  optional string id = 1;
+  optional string title = 2;
+  optional string description = 3;
+  optional string scheduleId = 4;
+}
+
+message LocationResponse {
+  optional string id = 1;
+  optional string title = 2;
+  optional string description = 3;
+  optional string scheduleId = 4;
+}
+
+// Constraint Messages
+message Constraint {
+  optional string workerId = 2;
+  optional string taskId = 3;
+  optional string locationId = 4;
+  optional int32 startTime = 5;
+  optional int32 endTime = 6;
+  optional ConstraintType type = 7;
+}
+
+enum ConstraintType {
+  MUST = 0;
+  CANNOT = 1;
+}

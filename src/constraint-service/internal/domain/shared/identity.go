@@ -12,6 +12,10 @@ func (i Identity) Value() (driver.Value, error) {
 	return uuid.UUID(i).Value()
 }
 
+func (i Identity) String() string {
+	return uuid.UUID(i).String()
+}
+
 func (i Identity) Bytes() ([]byte, error) {
 	return uuid.UUID(i).MarshalBinary()
 }

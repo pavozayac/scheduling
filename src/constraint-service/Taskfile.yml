@@ -25,6 +25,12 @@ tasks:
     cmds:
       - /tmp/bin/{{.BINARY_NAME}}
   live:
+    env:
+      CS_PORT: 8001
+      CS_REFLECTION: true
+      CS_DB_STRING: postgres://user:password@localhost:5432/constraints?sslmode=disable
+      CS_STARTUP_MIGRATE: false
+      CS_MIGRATION_DIR: ./internal/infrastructure/db/migrations
     watch: true
     sources:
       - "**/*.go"
