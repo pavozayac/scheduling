@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 env:
-  GO_VER: "1.22.5"
+  GO_VER: "1.23.1"
   APP_NAME: constraint-service
   REGISTRY: ghcr.io
 
