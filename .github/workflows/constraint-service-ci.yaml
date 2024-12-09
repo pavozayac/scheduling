@@ -1,4 +1,4 @@
-name: container-service - build, test and push image
+name: constraint-service
 
 on:
   push:
@@ -29,13 +29,13 @@ jobs:
         with:
           go-version: ${{ env.GO_VER }}
           cache-dependency-path: go.sum
-      - name: Setup Task
+      - name: Setup Taskfile
         run: sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b ~/.local/bin
       - name: Display Go version
         run: go version
       - name: Install dependencies
         run: task build
-      - name: Run tests
+      - name: Run test task
         run: task test
 
   golangci:
@@ -48,11 +48,11 @@ jobs:
         with:
           go-version: ${{ env.GO_VER }}
           cache-dependency-path: go.sum
-      - name: Setup Task
+      - name: Setup Taskfile
         run: sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b ~/.local/bin
       - name: Display Go version
         run: go version
-      - name: golangci-lint
+      - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
           version: v1.60
@@ -67,11 +67,11 @@ jobs:
         with:
           go-version: ${{ env.GO_VER }}
           cache-dependency-path: go.sum
-      - name: Setup Task
+      - name: Setup Taskfile
         run: sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b ~/.local/bin
       - name: Display Go version
         run: go version
-      - name: Install dependencies
+      - name: Run audit task
         run: task audit-ci
 
   docker:
