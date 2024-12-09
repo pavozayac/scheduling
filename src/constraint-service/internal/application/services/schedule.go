@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/pavozayac/scheduling/src/constraint-service/internal/domain/model"
@@ -31,13 +32,12 @@ func (s *scheduleService) CreateOrModifySchedule(ctx context.Context, dto ports.
 	}
 
 	for _, c := range dto.Constraints {
-		err1 := scheduleId.Scan(c.ScheduleId)
-		err2 := workerId.Scan(c.WorkerId)
-		err3 := taskId.Scan(c.TaskId)
-		err4 := locationId.Scan(c.LocationId)
+		err1 := workerId.Scan(c.WorkerId)
+		err2 := taskId.Scan(c.TaskId)
+		err3 := locationId.Scan(c.LocationId)
 
-		if err1 != nil || err2 != nil || err3 != nil || err4 != nil {
-			return nil, errors.Join(err1, err2, err3, err4)
+		if err1 != nil || err2 != nil || err3 != nil {
+			return nil, errors.Join(err1, err2, err3)
 		}
 
 		constraint, err := model.NewConstraint(
@@ -50,7 +50,7 @@ func (s *scheduleService) CreateOrModifySchedule(ctx context.Context, dto ports.
 			model.ConstraintType(c.ConstraintType),
 		)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("model.NewConstraint() error: %w", err)
 		}
 
 		constraints = append(constraints, constraint)
@@ -58,17 +58,17 @@ func (s *scheduleService) CreateOrModifySchedule(ctx context.Context, dto ports.
 
 	schedule, err := model.NewSchedule(id, dto.Title, constraints)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("model.NewSchedule() error: %w", err)
 	}
 
 	err = s.repo.SaveOrUpdateSchedule(ctx, *schedule)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("scheduleService.ScheduleRepository.SaveOrUpdateSchedule() error: %w", err)
 	}
 
-	feedback, err := s.GetSchedule(ctx, dto.Id)
+	feedback, err := s.GetSchedule(ctx, id.String())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("scheduleService.ScheduleRepository.GetSchedule() error: %w", err)
 	}
 
 	return feedback, nil
@@ -76,17 +76,18 @@ func (s *scheduleService) CreateOrModifySchedule(ctx context.Context, dto ports.
 
 func (s *scheduleService) GetSchedule(ctx context.Context, id string) (*ports.ScheduleDTO, error) {
 	var scheduleId shared.Identity
-	scheduleId.Scan(id)
+	if err := scheduleId.Scan(id); err != nil {
+		return nil, fmt.Errorf("scheduleId.Scan() error: %w", err)
+	}
 
 	schedule, err := s.repo.GetSchedule(ctx, scheduleId)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("scheduleService.ScheduleRepository.GetSchedule() error: %w", err)
 	}
 
 	dtoConstraints := make([]ports.ConstraintDTO, 0, len(schedule.Constraints()))
 	for _, c := range schedule.Constraints() {
 		dtoConstraints = append(dtoConstraints, ports.ConstraintDTO{
-			ScheduleId:     uuid.UUID(c.ScheduleId()).String(),
 			WorkerId:       uuid.UUID(c.WorkerId()).String(),
 			TaskId:         uuid.UUID(c.TaskId()).String(),
 			LocationId:     uuid.UUID(c.LocationId()).String(),

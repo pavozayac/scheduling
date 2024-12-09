@@ -38,7 +38,7 @@ func (s *taskService) CreateOrModifyTask(ctx context.Context, dto ports.TaskDTO)
 		return nil, err
 	}
 
-	feedback, err := s.GetTask(ctx, dto.Id)
+	feedback, err := s.GetTask(ctx, id.String())
 	if err != nil {
 		return nil, err
 	}

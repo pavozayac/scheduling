@@ -38,7 +38,7 @@ func (s *locationService) CreateOrModifyLocation(ctx context.Context, dto ports.
 		return nil, err
 	}
 
-	feedback, err := s.GetLocation(ctx, dto.Id)
+	feedback, err := s.GetLocation(ctx, id.String())
 	if err != nil {
 		return nil, err
 	}

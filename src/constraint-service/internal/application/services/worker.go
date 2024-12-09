@@ -38,7 +38,7 @@ func (s *workerService) CreateOrModifyWorker(ctx context.Context, dto ports.Work
 		return nil, err
 	}
 
-	feedback, err := s.GetWorker(ctx, dto.Id)
+	feedback, err := s.GetWorker(ctx, id.String())
 	if err != nil {
 		return nil, err
 	}

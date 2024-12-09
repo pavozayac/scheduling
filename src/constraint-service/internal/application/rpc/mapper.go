@@ -9,7 +9,6 @@ func convertConstraints(constraints []*protobuf.Constraint) []ports.ConstraintDT
 	var result []ports.ConstraintDTO
 	for _, c := range constraints {
 		result = append(result, ports.ConstraintDTO{
-			ScheduleId:     *c.ScheduleId,
 			WorkerId:       *c.WorkerId,
 			TaskId:         *c.TaskId,
 			LocationId:     *c.LocationId,
@@ -46,7 +45,6 @@ func convertConstraintsToProto(constraints []ports.ConstraintDTO) []*protobuf.Co
 		}
 
 		result = append(result, &protobuf.Constraint{
-			ScheduleId: &c.ScheduleId,
 			WorkerId:   &c.WorkerId,
 			TaskId:     &c.TaskId,
 			LocationId: &c.LocationId,

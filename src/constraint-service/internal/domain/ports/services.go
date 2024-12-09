@@ -3,7 +3,6 @@ package ports
 import "context"
 
 type ConstraintDTO struct {
-	ScheduleId     string
 	WorkerId       string
 	TaskId         string
 	LocationId     string

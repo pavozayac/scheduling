@@ -124,7 +124,6 @@ message LocationResponse {
 
 // Constraint Messages
 message Constraint {
-  optional string scheduleId = 1;
   optional string workerId = 2;
   optional string taskId = 3;
   optional string locationId = 4;
