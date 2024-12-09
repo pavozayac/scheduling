@@ -23,7 +23,7 @@ func (s Schedule) Constraints() Constraints {
 }
 
 func NewSchedule(id shared.Identity, title string, constraints Constraints) (*Schedule, error) {
-	if id == shared.NilIdentity || title == "" || constraints == nil {
+	if id == shared.NilIdentity || title == "" {
 		return nil, shared.ErrInvalidArguments
 	}
 

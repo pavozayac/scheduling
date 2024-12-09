@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/pavozayac/scheduling/src/constraint-service/internal/application/protobuf"
 	"github.com/pavozayac/scheduling/src/constraint-service/internal/domain/ports"
@@ -41,7 +42,7 @@ func NewGrpcServer(
 }
 
 func (s *GrpcServer) CreateSchedule(ctx context.Context, req *protobuf.CreateScheduleRequest) (*protobuf.ScheduleResponse, error) {
-	if req.Title == nil || req.Constraints == nil {
+	if req.Title == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "missing required fields")
 	}
 
@@ -54,7 +55,7 @@ func (s *GrpcServer) CreateSchedule(ctx context.Context, req *protobuf.CreateSch
 	result, err := s.scheduleService.CreateOrModifySchedule(ctx, scheduleDTO)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("scheduleService.CreateOrModifySchedule() error: %w", err)
 	}
 
 	return convertScheduleDTOToProto(*result), nil
@@ -66,6 +67,26 @@ func (s *GrpcServer) ReadSchedule(ctx context.Context, req *protobuf.ScheduleReq
 		return nil, err
 	}
 	return convertScheduleDTOToProto(*schedule), nil
+}
+
+func (s *GrpcServer) UpdateSchedule(ctx context.Context, req *protobuf.UpdateScheduleRequest) (*protobuf.ScheduleResponse, error) {
+	if req.Title == nil {
+		return nil, status.Errorf(codes.InvalidArgument, "missing required fields")
+	}
+
+	scheduleDTO := ports.ScheduleDTO{
+		Id:          *req.Id,
+		Title:       *req.Title,
+		Constraints: convertConstraints(req.Constraints),
+	}
+
+	result, err := s.scheduleService.CreateOrModifySchedule(ctx, scheduleDTO)
+
+	if err != nil {
+		return nil, fmt.Errorf("scheduleService.CreateOrModifySchedule() error: %w", err)
+	}
+
+	return convertScheduleDTOToProto(*result), nil
 }
 
 func (s *GrpcServer) DeleteSchedule(ctx context.Context, req *protobuf.ScheduleRequest) (*protobuf.ScheduleResponse, error) {
