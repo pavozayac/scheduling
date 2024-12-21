@@ -22,7 +22,10 @@ func TransactionDecorator(ctx context.Context, r PsqlDatabaser, queryFunc QueryF
 	}
 
 	defer func() {
-		err = errors.Join(err, tx.Rollback(ctx))
+		tempErr := tx.Rollback(ctx)
+		if !errors.Is(tempErr, pgx.ErrTxClosed) {
+			err = errors.Join(err, tempErr)
+		}
 	}()
 
 	queries := sqlc.New(tx)
