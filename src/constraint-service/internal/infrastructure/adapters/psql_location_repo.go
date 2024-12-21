@@ -2,6 +2,7 @@ package adapters
 
 import (
 	"context"
+	"errors"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -39,13 +40,15 @@ func (r *PsqlLocationRepo) SaveOrUpdateLocation(ctx context.Context, location mo
 	})
 }
 
-func (r *PsqlLocationRepo) GetLocation(ctx context.Context, id shared.Identity) (*model.Location, error) {
+func (r *PsqlLocationRepo) GetLocation(ctx context.Context, id shared.Identity) (location *model.Location, err error) {
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	defer tx.Rollback(ctx)
+	defer func() {
+		err = errors.Join(err, tx.Rollback(ctx))
+	}()
 
 	queries := sqlc.New(tx)
 

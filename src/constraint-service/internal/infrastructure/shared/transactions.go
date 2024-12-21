@@ -2,6 +2,7 @@ package shared
 
 import (
 	"context"
+	"errors"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/pavozayac/scheduling/src/constraint-service/internal/infrastructure/db/sqlc"
@@ -13,14 +14,19 @@ type PsqlDatabaser interface {
 
 type QueryFunc func(*sqlc.Queries, context.Context) error
 
-func TransactionDecorator(ctx context.Context, r PsqlDatabaser, queryFunc QueryFunc) error {
+func TransactionDecorator(ctx context.Context, r PsqlDatabaser, queryFunc QueryFunc) (err error) {
 	db := r.Db()
 	tx, err := db.Begin(ctx)
 	if err != nil {
 		return err
 	}
 
-	defer tx.Rollback(ctx)
+	defer func() {
+		tempErr := tx.Rollback(ctx)
+		if !errors.Is(tempErr, pgx.ErrTxClosed) {
+			err = errors.Join(err, tempErr)
+		}
+	}()
 
 	queries := sqlc.New(tx)
 

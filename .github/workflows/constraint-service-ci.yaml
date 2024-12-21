@@ -1,27 +1,27 @@
-name: container-service - build, test and push image
+name: constraint-service
 
 on:
   push:
-    paths: 
+    paths:
       - src/constraint-service/**
-  pull_request: 
-    paths: 
+  pull_request:
+    paths:
       - src/constraint-service/**
-  workflow_dispatch: 
+  workflow_dispatch:
 
 env:
-  GO_VER: '1.22.5'
+  GO_VER: "1.23.1"
   APP_NAME: constraint-service
   REGISTRY: ghcr.io
 
 defaults:
   run:
-     working-directory: ./src/constraint-service
+    working-directory: ./src/constraint-service
 
 jobs:
   test:
+    name: run tests
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
       - name: Setup Go ${{ env.GO_VER }}
@@ -29,14 +29,51 @@ jobs:
         with:
           go-version: ${{ env.GO_VER }}
           cache-dependency-path: go.sum
-      - name: Setup Task
+      - name: Setup Taskfile
         run: sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b ~/.local/bin
       - name: Display Go version
         run: go version
       - name: Install dependencies
         run: task build
-      - name: Run tests
+      - name: Run test task
         run: task test
+
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Go ${{ env.GO_VER }}
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VER }}
+          cache-dependency-path: go.sum
+      - name: Setup Taskfile
+        run: sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b ~/.local/bin
+      - name: Display Go version
+        run: go version
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.60
+          working-directory: ./src/constraint-service
+
+  audit:
+    name: audit code
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Go ${{ env.GO_VER }}
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VER }}
+          cache-dependency-path: go.sum
+      - name: Setup Taskfile
+        run: sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b ~/.local/bin
+      - name: Display Go version
+        run: go version
+      - name: Run audit task
+        run: task audit-ci
 
   docker:
     runs-on: ubuntu-latest
@@ -77,5 +114,3 @@ jobs:
           subject-name: ${{ env.REGISTRY }}/${{ github.repository }}/${{ env.APP_NAME }}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
-        
-

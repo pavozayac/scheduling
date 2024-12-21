@@ -68,10 +68,17 @@ func main() {
 	http.HandleFunc("/health", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/text")
 		w.WriteHeader(http.StatusOK)
-		io.WriteString(w, "OK")
+
+		if _, err := io.WriteString(w, "OK"); err != nil {
+			log.Fatalf("/health handler failed to write response: %v", err)
+		}
 	}))
 
-	go http.ListenAndServe(":"+strconv.Itoa(conf.HeartbeatPort), nil)
+	go func() {
+		if err := http.ListenAndServe(":"+strconv.Itoa(conf.HeartbeatPort), nil); err != nil {
+			log.Fatalf("failed to listen on port %d: %v", conf.HeartbeatPort, err)
+		}
+	}()
 
 	if conf.UseReflection {
 		reflection.Register(s)

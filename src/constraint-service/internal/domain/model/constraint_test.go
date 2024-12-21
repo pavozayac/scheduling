@@ -7,18 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type Input struct {
-	scheduleId shared.Identity
-	firstArg   shared.Identity
-	secondArg  shared.Identity
-	thirdArg   ConstraintType
-}
-
-type Output struct {
-	expectedConstraint Constraint
-	expectedError      error
-}
-
 var mockId1 = shared.MockIdentityGenerator{}.Generate()
 var mockId2 = shared.MockIdentityGenerator{}.Generate()
 var mockId3 = shared.MockIdentityGenerator{}.Generate()

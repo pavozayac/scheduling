@@ -2,6 +2,7 @@ package adapters
 
 import (
 	"context"
+	"errors"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -38,13 +39,15 @@ func (r *PsqlTaskRepo) SaveOrUpdateTask(ctx context.Context, task model.Task) er
 	})
 }
 
-func (r *PsqlTaskRepo) GetTask(ctx context.Context, id shared.Identity) (*model.Task, error) {
+func (r *PsqlTaskRepo) GetTask(ctx context.Context, id shared.Identity) (task *model.Task, err error) {
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	defer tx.Rollback(ctx)
+	defer func() {
+		err = errors.Join(err, tx.Rollback(ctx))
+	}()
 
 	queries := sqlc.New(tx)
 
