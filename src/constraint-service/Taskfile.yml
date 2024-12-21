@@ -16,6 +16,9 @@ tasks:
     cmds:
       - go mod tidy -v
       - go fmt ./...
+  lint:
+    cmds:
+      - go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.62.2 run
   build:
     cmds:
       - go build -o /tmp/bin/{{.BINARY_NAME}} {{.MAIN_PACKAGE}}
