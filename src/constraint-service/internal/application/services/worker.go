@@ -23,10 +23,14 @@ func (s *workerService) CreateOrModifyWorker(ctx context.Context, dto ports.Work
 	if dto.Id == "" {
 		id = shared.UuidGenerator{}.Generate()
 	} else {
-		id.Scan(dto.Id)
+		if err := id.Scan(dto.Id); err != nil {
+			return nil, err
+		}
 	}
 
-	scheduleId.Scan(dto.ScheduleId)
+	if err := scheduleId.Scan(dto.ScheduleId); err != nil {
+		return nil, err
+	}
 
 	worker, err := model.NewWorker(id, scheduleId, dto.FirstName, dto.LastName)
 	if err != nil {
@@ -48,7 +52,9 @@ func (s *workerService) CreateOrModifyWorker(ctx context.Context, dto ports.Work
 
 func (s *workerService) GetWorker(ctx context.Context, id string) (*ports.WorkerDTO, error) {
 	var workerId shared.Identity
-	workerId.Scan(id)
+	if err := workerId.Scan(id); err != nil {
+		return nil, err
+	}
 
 	worker, err := s.repo.GetWorker(ctx, workerId)
 	if err != nil {
@@ -65,7 +71,9 @@ func (s *workerService) GetWorker(ctx context.Context, id string) (*ports.Worker
 
 func (s *workerService) RemoveWorker(ctx context.Context, id string) error {
 	var workerId shared.Identity
-	workerId.Scan(id)
+	if err := workerId.Scan(id); err != nil {
+		return err
+	}
 
 	return s.repo.DeleteWorker(ctx, workerId)
 }

@@ -2,6 +2,7 @@ package adapters
 
 import (
 	"context"
+	"errors"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -37,13 +38,15 @@ func (r *PsqlWorkerRepo) SaveOrUpdateWorker(ctx context.Context, worker model.Wo
 	})
 }
 
-func (r *PsqlWorkerRepo) GetWorker(ctx context.Context, id shared.Identity) (*model.Worker, error) {
+func (r *PsqlWorkerRepo) GetWorker(ctx context.Context, id shared.Identity) (worker *model.Worker, err error) {
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	defer tx.Rollback(ctx)
+	defer func() {
+		err = errors.Join(err, tx.Rollback(ctx))
+	}()
 
 	queries := sqlc.New(tx)
 

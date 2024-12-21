@@ -23,10 +23,14 @@ func (s *locationService) CreateOrModifyLocation(ctx context.Context, dto ports.
 	if dto.Id == "" {
 		id = shared.UuidGenerator{}.Generate()
 	} else {
-		id.Scan(dto.Id)
+		if err := id.Scan(dto.Id); err != nil {
+			return nil, err
+		}
 	}
 
-	scheduleId.Scan(dto.ScheduleId)
+	if err := scheduleId.Scan(dto.ScheduleId); err != nil {
+		return nil, err
+	}
 
 	location, err := model.NewLocation(id, scheduleId, dto.Name, dto.Description)
 	if err != nil {
@@ -48,7 +52,9 @@ func (s *locationService) CreateOrModifyLocation(ctx context.Context, dto ports.
 
 func (s *locationService) GetLocation(ctx context.Context, id string) (*ports.LocationDTO, error) {
 	var locationId shared.Identity
-	locationId.Scan(id)
+	if err := locationId.Scan(id); err != nil {
+		return nil, err
+	}
 
 	location, err := s.repo.GetLocation(ctx, locationId)
 	if err != nil {
@@ -67,7 +73,9 @@ func (s *locationService) GetLocation(ctx context.Context, id string) (*ports.Lo
 
 func (s *locationService) RemoveLocation(ctx context.Context, id string) error {
 	var locationId shared.Identity
-	locationId.Scan(id)
+	if err := locationId.Scan(id); err != nil {
+		return err
+	}
 
 	return s.repo.DeleteLocation(ctx, locationId)
 }

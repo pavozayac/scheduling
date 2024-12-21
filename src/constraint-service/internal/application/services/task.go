@@ -23,10 +23,14 @@ func (s *taskService) CreateOrModifyTask(ctx context.Context, dto ports.TaskDTO)
 	if dto.Id == "" {
 		id = shared.UuidGenerator{}.Generate()
 	} else {
-		id.Scan(dto.Id)
+		if err := id.Scan(dto.Id); err != nil {
+			return nil, err
+		}
 	}
 
-	scheduleId.Scan(dto.ScheduleId)
+	if err := scheduleId.Scan(dto.ScheduleId); err != nil {
+		return nil, err
+	}
 
 	task, err := model.NewTask(id, scheduleId, dto.Title, dto.Description)
 	if err != nil {
@@ -48,7 +52,9 @@ func (s *taskService) CreateOrModifyTask(ctx context.Context, dto ports.TaskDTO)
 
 func (s *taskService) GetTask(ctx context.Context, id string) (*ports.TaskDTO, error) {
 	var taskId shared.Identity
-	taskId.Scan(id)
+	if err := taskId.Scan(id); err != nil {
+		return nil, err
+	}
 
 	task, err := s.repo.GetTask(ctx, taskId)
 	if err != nil {
@@ -65,7 +71,9 @@ func (s *taskService) GetTask(ctx context.Context, id string) (*ports.TaskDTO, e
 
 func (s *taskService) RemoveTask(ctx context.Context, id string) error {
 	var taskId shared.Identity
-	taskId.Scan(id)
+	if err := taskId.Scan(id); err != nil {
+		return err
+	}
 
 	return s.repo.DeleteTask(ctx, taskId)
 }

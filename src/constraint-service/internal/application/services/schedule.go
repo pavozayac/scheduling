@@ -106,7 +106,9 @@ func (s *scheduleService) GetSchedule(ctx context.Context, id string) (*ports.Sc
 
 func (s *scheduleService) RemoveSchedule(ctx context.Context, id string) error {
 	var scheduleId shared.Identity
-	scheduleId.Scan(id)
+	if err := scheduleId.Scan(id); err != nil {
+		return fmt.Errorf("scheduleId.Scan() error: %w", err)
+	}
 
 	return s.repo.DeleteSchedule(ctx, scheduleId)
 }
