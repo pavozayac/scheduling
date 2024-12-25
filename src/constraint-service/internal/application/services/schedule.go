@@ -20,13 +20,13 @@ func NewScheduleService(repo ports.ScheduleRepository) *scheduleService {
 }
 
 func (s *scheduleService) CreateOrModifySchedule(ctx context.Context, dto ports.ScheduleDTO) (*ports.ScheduleDTO, error) {
-	var id, scheduleId, workerId, taskId, locationId shared.Identity
+	var scheduleId, workerId, taskId, locationId shared.Identity
 	var constraints []model.Constraint
 
 	if dto.Id == "" {
-		id = shared.UuidGenerator{}.Generate()
+		scheduleId = shared.UuidGenerator{}.Generate()
 	} else {
-		if err := id.Scan(dto.Id); err != nil {
+		if err := scheduleId.Scan(dto.Id); err != nil {
 			return nil, err
 		}
 	}
@@ -56,7 +56,7 @@ func (s *scheduleService) CreateOrModifySchedule(ctx context.Context, dto ports.
 		constraints = append(constraints, constraint)
 	}
 
-	schedule, err := model.NewSchedule(id, dto.Title, constraints)
+	schedule, err := model.NewSchedule(scheduleId, dto.Title, constraints)
 	if err != nil {
 		return nil, fmt.Errorf("model.NewSchedule() error: %w", err)
 	}
@@ -66,7 +66,7 @@ func (s *scheduleService) CreateOrModifySchedule(ctx context.Context, dto ports.
 		return nil, fmt.Errorf("scheduleService.ScheduleRepository.SaveOrUpdateSchedule() error: %w", err)
 	}
 
-	feedback, err := s.GetSchedule(ctx, id.String())
+	feedback, err := s.GetSchedule(ctx, scheduleId.String())
 	if err != nil {
 		return nil, fmt.Errorf("scheduleService.ScheduleRepository.GetSchedule() error: %w", err)
 	}
