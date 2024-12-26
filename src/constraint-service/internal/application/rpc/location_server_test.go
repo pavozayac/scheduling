@@ -46,7 +46,8 @@ func TestLocationServer(t *testing.T) {
 		}))
 		locationClient := protobuf.NewLocationServiceClient(conn)
 
-		pgConn.Exec(context.Background(), "INSERT INTO schedules (id, title) VALUES ($1, $2)", uuidOne, "Test Schedule")
+		_, err = pgConn.Exec(context.Background(), "INSERT INTO schedules (id, title) VALUES ($1, $2)", uuidOne, "Test Schedule")
+		require.NoError(t, err)
 
 		request := &protobuf.CreateLocationRequest{
 			ScheduleId:  &uuidOneString,
@@ -78,8 +79,10 @@ func TestLocationServer(t *testing.T) {
 		}))
 		locationClient := protobuf.NewLocationServiceClient(conn)
 
-		pgConn.Exec(context.Background(), "INSERT INTO schedules (id, title) VALUES ($1, $2)", uuidOne, "Test Schedule")
-		pgConn.Exec(context.Background(), "INSERT INTO locations (id, schedule_id, title, story) VALUES ($1, $2, $3, $4)", uuidTwo, uuidOne, exampleTitle, exampleDescription)
+		_, err = pgConn.Exec(context.Background(), "INSERT INTO schedules (id, title) VALUES ($1, $2)", uuidOne, "Test Schedule")
+		require.NoError(t, err)
+		_, err = pgConn.Exec(context.Background(), "INSERT INTO locations (id, schedule_id, title, story) VALUES ($1, $2, $3, $4)", uuidTwo, uuidOne, exampleTitle, exampleDescription)
+		require.NoError(t, err)
 
 		request := &protobuf.LocationRequest{
 			Id: &uuidTwoString,
@@ -109,8 +112,10 @@ func TestLocationServer(t *testing.T) {
 		}))
 		locationClient := protobuf.NewLocationServiceClient(conn)
 
-		pgConn.Exec(context.Background(), "INSERT INTO schedules (id, title) VALUES ($1, $2)", uuidOne, "Test Schedule")
-		pgConn.Exec(context.Background(), "INSERT INTO locations (id, schedule_id, title, story) VALUES ($1, $2, $3, $4)", uuidTwo, uuidOne, exampleTitle, exampleDescription)
+		_, err = pgConn.Exec(context.Background(), "INSERT INTO schedules (id, title) VALUES ($1, $2)", uuidOne, "Test Schedule")
+		require.NoError(t, err)
+		_, err = pgConn.Exec(context.Background(), "INSERT INTO locations (id, schedule_id, title, story) VALUES ($1, $2, $3, $4)", uuidTwo, uuidOne, exampleTitle, exampleDescription)
+		require.NoError(t, err)
 
 		request := &protobuf.LocationRequest{
 			Id: &uuidTwoString,

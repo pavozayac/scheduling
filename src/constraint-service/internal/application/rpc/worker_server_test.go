@@ -46,7 +46,8 @@ func TestWorkerServer(t *testing.T) {
 		}))
 		workerClient := protobuf.NewWorkerServiceClient(conn)
 
-		pgConn.Exec(context.Background(), "INSERT INTO schedules (id, title) VALUES ($1, $2)", uuidOne, "Test Schedule")
+		_, err = pgConn.Exec(context.Background(), "INSERT INTO schedules (id, title) VALUES ($1, $2)", uuidOne, "Test Schedule")
+		require.NoError(t, err)
 
 		request := &protobuf.CreateWorkerRequest{
 			ScheduleId: &uuidOneString,
@@ -78,8 +79,10 @@ func TestWorkerServer(t *testing.T) {
 		}))
 		workerClient := protobuf.NewWorkerServiceClient(conn)
 
-		pgConn.Exec(context.Background(), "INSERT INTO schedules (id, title) VALUES ($1, $2)", uuidOne, "Test Schedule")
-		pgConn.Exec(context.Background(), "INSERT INTO workers (id, schedule_id, first_name, last_name) VALUES ($1, $2, $3, $4)", uuidTwo, uuidOne, exampleFirstName, exampleLastName)
+		_, err = pgConn.Exec(context.Background(), "INSERT INTO schedules (id, title) VALUES ($1, $2)", uuidOne, "Test Schedule")
+		require.NoError(t, err)
+		_, err = pgConn.Exec(context.Background(), "INSERT INTO workers (id, schedule_id, first_name, last_name) VALUES ($1, $2, $3, $4)", uuidTwo, uuidOne, exampleFirstName, exampleLastName)
+		require.NoError(t, err)
 
 		request := &protobuf.WorkerRequest{
 			Id: &uuidTwoString,
@@ -109,8 +112,10 @@ func TestWorkerServer(t *testing.T) {
 		}))
 		workerClient := protobuf.NewWorkerServiceClient(conn)
 
-		pgConn.Exec(context.Background(), "INSERT INTO schedules (id, title) VALUES ($1, $2)", uuidOne, "Test Schedule")
-		pgConn.Exec(context.Background(), "INSERT INTO workers (id, schedule_id, first_name, last_name) VALUES ($1, $2, $3, $4)", uuidTwo, uuidOne, exampleFirstName, exampleLastName)
+		_, err = pgConn.Exec(context.Background(), "INSERT INTO schedules (id, title) VALUES ($1, $2)", uuidOne, "Test Schedule")
+		require.NoError(t, err)
+		_, err = pgConn.Exec(context.Background(), "INSERT INTO workers (id, schedule_id, first_name, last_name) VALUES ($1, $2, $3, $4)", uuidTwo, uuidOne, exampleFirstName, exampleLastName)
+		require.NoError(t, err)
 
 		request := &protobuf.WorkerRequest{
 			Id: &uuidTwoString,
