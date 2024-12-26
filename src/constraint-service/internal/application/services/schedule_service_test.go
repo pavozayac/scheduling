@@ -19,6 +19,7 @@ func TestScheduleService(t *testing.T) {
 
 	uuidOne := shared.MockIdentityGenerator{}.Generate()
 	uuidTwo := shared.MockIdentityGenerator{}.Generate()
+	uuidTwoString := uuidTwo.String()
 
 	exampleConstraint, err := model.NewConstraint(uuidOne, uuidTwo, shared.NilIdentity, shared.NilIdentity, 1609459200, 1609462800, model.Must)
 	require.NoError(t, err)
@@ -39,9 +40,7 @@ func TestScheduleService(t *testing.T) {
 			Title: "Test Schedule",
 			Constraints: []ports.ConstraintDTO{
 				{
-					WorkerId:       uuidTwo.String(),
-					TaskId:         shared.NilIdentity.String(),
-					LocationId:     shared.NilIdentity.String(),
+					WorkerId:       uuidTwoString,
 					StartTime:      1609459200,
 					EndTime:        1609462800,
 					ConstraintType: string(model.Must),
@@ -114,9 +113,7 @@ func TestScheduleService(t *testing.T) {
 			Title: "Updated Schedule",
 			Constraints: []ports.ConstraintDTO{
 				{
-					WorkerId:       uuidTwo.String(),
-					TaskId:         shared.NilIdentity.String(),
-					LocationId:     shared.NilIdentity.String(),
+					WorkerId:       uuidTwoString,
 					StartTime:      1609459200,
 					EndTime:        1609462800,
 					ConstraintType: string(model.Must),

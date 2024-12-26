@@ -133,6 +133,6 @@ message Constraint {
 }
 
 enum ConstraintType {
-  MUST = 0;
-  CANNOT = 1;
+  must = 0;
+  cannot = 1;
 }

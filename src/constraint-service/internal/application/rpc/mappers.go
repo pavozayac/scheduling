@@ -9,12 +9,12 @@ func convertConstraints(constraints []*protobuf.Constraint) []ports.ConstraintDT
 	var result []ports.ConstraintDTO
 	for _, c := range constraints {
 		result = append(result, ports.ConstraintDTO{
-			WorkerId:       *c.WorkerId,
-			TaskId:         *c.TaskId,
-			LocationId:     *c.LocationId,
+			WorkerId:       c.GetWorkerId(),
+			TaskId:         c.GetTaskId(),
+			LocationId:     c.GetLocationId(),
 			StartTime:      int(*c.StartTime),
 			EndTime:        int(*c.EndTime),
-			ConstraintType: c.Type.String(),
+			ConstraintType: c.Type.Enum().String(),
 		})
 	}
 	return result
@@ -37,17 +37,30 @@ func convertConstraintsToProto(constraints []ports.ConstraintDTO) []*protobuf.Co
 		var protoConstraintType protobuf.ConstraintType
 		switch c.ConstraintType {
 		case "must":
-			protoConstraintType = protobuf.ConstraintType_MUST
+			protoConstraintType = protobuf.ConstraintType_must
 		case "cannot":
-			protoConstraintType = protobuf.ConstraintType_CANNOT
+			protoConstraintType = protobuf.ConstraintType_cannot
 		default:
-			protoConstraintType = protobuf.ConstraintType_MUST
+			protoConstraintType = protobuf.ConstraintType_must
+		}
+
+		var workerId, taskId, locationId *string
+		if c.WorkerId != "" {
+			workerId = &c.WorkerId
+		}
+
+		if c.TaskId == "" {
+			taskId = &c.TaskId
+		}
+
+		if c.LocationId == "" {
+			locationId = &c.LocationId
 		}
 
 		result = append(result, &protobuf.Constraint{
-			WorkerId:   &c.WorkerId,
-			TaskId:     &c.TaskId,
-			LocationId: &c.LocationId,
+			WorkerId:   workerId,
+			TaskId:     taskId,
+			LocationId: locationId,
 			StartTime:  &intStartTime,
 			EndTime:    &intEndTime,
 			Type:       &protoConstraintType,
