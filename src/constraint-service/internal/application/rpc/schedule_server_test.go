@@ -186,7 +186,7 @@ func TestScheduleServer(t *testing.T) {
 		require.NoError(t, err)
 		_, err = pgConn.Exec(context.Background(), "INSERT INTO workers (id, schedule_id, first_name, last_name) VALUES ($1, $2, $3, $4)", uuidTwo, uuidOne, "John", "Doe")
 		require.NoError(t, err)
-		_, err = pgConn.Exec(context.Background(), "INSERT INTO constraints (schedule_id, worker_id, task_id, location_id, start_time, end_time, type) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+		_, err = pgConn.Exec(context.Background(), "INSERT INTO constraints (schedule_id, worker_id, task_id, location_id, start_slot, end_slot, kind) VALUES ($1, $2, $3, $4, $5, $6, $7)",
 			uuidOne, exampleConstraint.WorkerId, exampleConstraint.TaskId, exampleConstraint.LocationId, exampleConstraint.StartTime, exampleConstraint.EndTime, exampleConstraint.Type.String())
 		require.NoError(t, err)
 
