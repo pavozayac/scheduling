@@ -1,0 +1,22 @@
+with-expecter: true
+dir: internal/mocks
+outpkg: mocks
+filename: mock_{{.PackageName}}_{{.InterfaceName}}.go
+packages:
+  github.com/pavozayac/scheduling/src/constraint-service/internal/domain/ports:
+    # place your package-specific config here
+    config:
+    interfaces:
+      ScheduleRepository:
+      LocationRepository:
+      WorkerRepository:
+      TaskRepository:
+      ScheduleService:
+      LocationService:
+      TaskService:
+      WorkerService:
+
+      # # select the interfaces you want mocked
+      # Foo:
+      #   # Modify package-level config for this specific interface (if applicable)
+      #   config:

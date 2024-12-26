@@ -10,27 +10,25 @@ import (
 	"github.com/pavozayac/scheduling/src/constraint-service/internal/domain/shared"
 	tshared "github.com/pavozayac/scheduling/src/constraint-service/internal/tests/shared"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestWorkerRepo(t *testing.T) {
 	ctx := context.Background()
-	ctr, teardown := tshared.SetupMigratedPostgresContainer(t, ctx)
+	connStr, ctr, teardown := tshared.SetupMigratedPostgresContainer(t, ctx, "../db/migrations")
 	defer teardown(t)
 
-	err := ctr.Snapshot(ctx)
-	assert.NoError(t, err)
-
-	connStr, err := ctr.ConnectionString(ctx)
-	assert.NoError(t, err)
+	err := ctr.Snapshot(context.Background())
+	require.NoError(t, err)
 
 	t.Run("ShouldCreateNewWorker", func(t *testing.T) {
 		t.Cleanup(func() {
-			err = ctr.Restore(ctx)
-			assert.NoError(t, err)
+			err := ctr.Restore(ctx)
+			require.NoError(t, err)
 		})
 
 		pgConn, err := pgx.Connect(context.Background(), connStr)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		defer pgConn.Close(context.Background())
 
 		repo := PsqlWorkerRepo{
@@ -71,12 +69,12 @@ func TestWorkerRepo(t *testing.T) {
 
 	t.Run("ShouldRetrieveWorker", func(t *testing.T) {
 		t.Cleanup(func() {
-			err = ctr.Restore(ctx)
-			assert.NoError(t, err)
+			err := ctr.Restore(ctx)
+			require.NoError(t, err)
 		})
 
 		pgConn, err := pgx.Connect(context.Background(), connStr)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		defer pgConn.Close(context.Background())
 
 		repo := PsqlWorkerRepo{
@@ -104,12 +102,12 @@ func TestWorkerRepo(t *testing.T) {
 
 	t.Run("ShouldDeleteWorker", func(t *testing.T) {
 		t.Cleanup(func() {
-			err = ctr.Restore(ctx)
-			assert.NoError(t, err)
+			err := ctr.Restore(ctx)
+			require.NoError(t, err)
 		})
 
 		pgConn, err := pgx.Connect(context.Background(), connStr)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		defer pgConn.Close(context.Background())
 
 		repo := PsqlWorkerRepo{
