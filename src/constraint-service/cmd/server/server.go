@@ -58,12 +58,15 @@ func main() {
 
 	s := grpc.NewServer()
 
-	grpcServer := rpc.NewGrpcServer(scheduleService, locationService, taskService, workerService)
+	scheduleServer := rpc.NewScheduleServer(scheduleService)
+	locationServer := rpc.NewLocationServer(locationService)
+	taskServer := rpc.NewTaskServer(taskService)
+	workerServer := rpc.NewWorkerServer(workerService)
 
-	protobuf.RegisterScheduleServiceServer(s, &grpcServer)
-	protobuf.RegisterLocationServiceServer(s, &grpcServer)
-	protobuf.RegisterTaskServiceServer(s, &grpcServer)
-	protobuf.RegisterWorkerServiceServer(s, &grpcServer)
+	protobuf.RegisterScheduleServiceServer(s, scheduleServer)
+	protobuf.RegisterLocationServiceServer(s, locationServer)
+	protobuf.RegisterTaskServiceServer(s, taskServer)
+	protobuf.RegisterWorkerServiceServer(s, workerServer)
 
 	http.HandleFunc("/health", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/text")
