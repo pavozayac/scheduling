@@ -1,0 +1,148 @@
+name: main
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+env:
+  GO_VER: "1.24.0"
+  APP_NAME: constraint-service
+  REGISTRY: ghcr.io
+
+defaults:
+  run:
+    working-directory: ./
+
+jobs:
+  test:
+    name: run tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Go ${{ env.GO_VER }}
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VER }}
+          cache-dependency-path: go.sum
+      - name: Setup Taskfile
+        run: sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b ~/.local/bin
+      - name: Display Go version
+        run: go version
+      - name: Install dependencies
+        run: task build
+      - name: Run test task
+        run: task test
+
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Go ${{ env.GO_VER }}
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VER }}
+          cache-dependency-path: go.sum
+      - name: Setup Taskfile
+        run: sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b ~/.local/bin
+      - name: Display Go version
+        run: go version
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.64.4
+
+  audit:
+    name: audit code
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Go ${{ env.GO_VER }}
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VER }}
+          cache-dependency-path: go.sum
+      - name: Setup Taskfile
+        run: sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b ~/.local/bin
+      - name: Display Go version
+        run: go version
+      - name: Run audit task
+        run: task audit-ci
+
+  docker-build:
+    name: build image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    if: github.event.pull_request.base.ref == 'develop' || github.ref == 'refs/heads/develop'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Log in to registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/${{ env.APP_NAME }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=sha,format=short,prefix=,suffix=-${{ github.run_number }},enable=true
+      - name: Cache image
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          outputs: type=cacheonly
+          context: .
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  docker-push:
+    needs: docker-build
+    name: push image to registry
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    if: github.ref == 'refs/heads/develop'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Log in to registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/${{ env.APP_NAME }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=sha,format=short,prefix=,suffix=-${{ github.run_number }},enable=true
+      - name: Push to registry
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ github.repository }}/${{ env.APP_NAME }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true

@@ -1,6 +1,64 @@
 version: "3"
 
+interval: 1s
+
+vars:
+  MAIN_PACKAGE: github.com/pavozayac/constraints/cmd/server
+  BINARY_NAME: server
+
 tasks:
+  test:
+    env:
+      CGO_ENABLED: 1
+    cmds:
+      - go run gotest.tools/gotestsum@latest --format testname -- -v -race -buildvcs ./...
+  tidy:
+    cmds:
+      - go mod tidy -v
+      - go fmt ./...
+  lint:
+    cmds:
+      - go run github.com/golangci/golangci-lint/cmd/golangci-lint@1.64.4 run
+  build:
+    cmds:
+      - go build -o /tmp/bin/{{.BINARY_NAME}} {{.MAIN_PACKAGE}}
+  run:
+    deps:
+      - build
+    cmds:
+      - /tmp/bin/{{.BINARY_NAME}}
+  live:
+    env:
+      CS_PORT: 8001
+      CS_REFLECTION: true
+      CS_DB_STRING: postgres://user:password@localhost:5432/constraints?sslmode=disable
+      CS_STARTUP_MIGRATE: false
+      CS_MIGRATION_DIR: ./internal/infrastructure/db/migrations
+    watch: true
+    sources:
+      - "**/*.go"
+    cmds:
+      - go build -o /tmp/bin/{{.BINARY_NAME}} {{.MAIN_PACKAGE}}
+      - /tmp/bin/{{.BINARY_NAME}}
+  audit-ci:
+    cmds:
+      - go mod tidy -diff
+      - go mod verify
+      - test -z "$(gofmt -l .)"
+      - go vet ./...
+      - go run honnef.co/go/tools/cmd/staticcheck@v0.6.0 -checks=all,-ST1000,-U1000,-ST1003 ./...
+      # - go run golang.org/x/vuln/cmd/govulncheck@latest ./...
+  audit:
+    deps:
+      - test
+      - audit-ci
+  no-dirty:
+    cmds:
+      - test -z "$(git status --porcelain)"
+  push:
+    deps: [no-dirty, audit]
+    cmds:
+      - git push
   proto:
     cmds:
-      - protoc protobuf/constraints.proto --go_out=./src/constraint-service/internal/application --go_opt=paths=source_relative --go-grpc_out=./src/constraint-service/internal/application --go-grpc_opt=paths=source_relative
+      - protoc ./protobuf/constraints.proto --go_out=./internal/application --go_opt=paths=source_relative --go-grpc_out=./internal/application --go-grpc_opt=paths=source_relative
