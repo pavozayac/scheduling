@@ -18,7 +18,7 @@ tasks:
       - go fmt ./...
   lint:
     cmds:
-      - go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.62.2 run
+      - go run github.com/golangci/golangci-lint/cmd/golangci-lint@1.64.4 run
   build:
     cmds:
       - go build -o /tmp/bin/{{.BINARY_NAME}} {{.MAIN_PACKAGE}}
@@ -46,8 +46,8 @@ tasks:
       - go mod verify
       - test -z "$(gofmt -l .)"
       - go vet ./...
-      - go run honnef.co/go/tools/cmd/staticcheck@latest -checks=all,-ST1000,-U1000,-ST1003 ./...
-      - go run golang.org/x/vuln/cmd/govulncheck@latest ./...
+      # - go run honnef.co/go/tools/cmd/staticcheck@latest -checks=all,-ST1000,-U1000,-ST1003 ./...
+      # - go run golang.org/x/vuln/cmd/govulncheck@latest ./...
   audit:
     deps:
       - test

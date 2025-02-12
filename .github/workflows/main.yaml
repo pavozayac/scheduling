@@ -51,8 +51,7 @@ jobs:
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
-          version: v1.60
-          working-directory: ./src/constraint-service
+          version: v1.64.4
 
   audit:
     name: audit code
@@ -102,7 +101,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           outputs: type=cacheonly
-          context: src/${{ env.APP_NAME }}
+          context: .
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
@@ -137,8 +136,7 @@ jobs:
         id: push
         uses: docker/build-push-action@v6
         with:
-          
-          context: src/${{ env.APP_NAME }}
+          context: .
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
